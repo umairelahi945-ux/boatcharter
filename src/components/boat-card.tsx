@@ -31,6 +31,9 @@ export function BoatCard({ boat, onSelect }: { boat: BoatSummary; onSelect: () =
           src={boat.image_urls[0] ?? FALLBACK_IMAGE}
           alt={boat.title}
           loading="lazy"
+          onError={(event) => {
+            event.currentTarget.src = FALLBACK_IMAGE;
+          }}
           className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <Badge className="absolute top-3 left-3 bg-secondary text-secondary-foreground">
