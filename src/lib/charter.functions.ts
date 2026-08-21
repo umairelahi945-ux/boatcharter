@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { computeQuote } from "./money";
+import { computeDeposit, computeQuote } from "./money";
 
 const bookingInputSchema = z.object({
   boatId: z.string().uuid("Please choose a boat."),
