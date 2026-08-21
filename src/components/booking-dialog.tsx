@@ -128,6 +128,8 @@ export function BookingDialog({
     });
   }, [boat, bookingType, startValue, endValue]);
 
+  const split = computeDeposit(quote?.totalCents ?? 0);
+
   if (!boat) return null;
 
   const images = boat.image_urls.length > 0 ? boat.image_urls : [FALLBACK_IMAGE];
