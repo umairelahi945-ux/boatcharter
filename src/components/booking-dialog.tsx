@@ -408,10 +408,22 @@ export function BookingDialog({
                     <Row label="Service fee (10%)" value={formatMoney(quote?.feesCents ?? 0)} />
                     <Separator className="my-2" />
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Total</span>
-                      <span className="font-display text-2xl font-semibold">
+                      <span className="font-medium">Total booking price</span>
+                      <span className="font-display text-xl font-semibold">
                         {formatMoney(quote?.totalCents ?? 0)}
                       </span>
+                    </div>
+                    <div className="mt-2 rounded-lg bg-primary/10 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-primary">20% deposit due now</span>
+                        <span className="font-display text-2xl font-semibold text-primary">
+                          {formatMoney(split.depositCents)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Remaining 80% balance</span>
+                        <span className="font-medium">{formatMoney(split.balanceCents)}</span>
+                      </div>
                     </div>
                   </div>
                 )}
