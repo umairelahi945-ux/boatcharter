@@ -196,6 +196,9 @@ export const requestBooking = createServerFn({ method: "POST" })
         subtotal_cents: quote.subtotalCents,
         fees_cents: quote.feesCents,
         total_price_cents: quote.totalCents,
+        deposit_cents: split.depositCents,
+        amount_paid_cents: 0,
+        balance_due_cents: quote.totalCents,
       })
       .select()
       .single();
