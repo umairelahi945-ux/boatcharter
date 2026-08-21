@@ -34,6 +34,9 @@ type Confirmation = {
   paymentStatus: string;
   bookingStatus: string;
   totalCents: number;
+  depositCents: number;
+  balanceCents: number;
+  amountPaidCents: number;
   message: string;
   boatTitle: string;
 };
