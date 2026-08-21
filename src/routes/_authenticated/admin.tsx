@@ -645,6 +645,11 @@ function BookingsTab() {
                 {formatDateTime(booking.end_date)}
               </TableCell>
               <TableCell>{formatMoney(booking.total_price_cents)}</TableCell>
+              <TableCell>{formatMoney(booking.deposit_cents)}</TableCell>
+              <TableCell>{formatMoney(booking.amount_paid_cents)}</TableCell>
+              <TableCell className="font-medium">
+                {formatMoney(booking.balance_due_cents)}
+              </TableCell>
               <TableCell>
                 <StatusBadge status={booking.payment_status} />
               </TableCell>
