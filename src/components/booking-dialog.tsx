@@ -102,6 +102,9 @@ export function BookingDialog({
         paymentStatus: result.paymentStatus,
         bookingStatus: result.bookingStatus,
         totalCents: result.totalCents,
+        depositCents: result.depositCents,
+        balanceCents: result.balanceCents,
+        amountPaidCents: result.amountPaidCents,
         message: result.message,
         boatTitle: result.boatTitle,
       });
