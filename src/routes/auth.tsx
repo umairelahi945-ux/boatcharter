@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { Anchor, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
@@ -29,20 +30,39 @@ export const Route = createFileRoute("/auth")({
 
 function describeError(message: string) {
   const normalized = message.toLowerCase();
-  if (normalized.includes("invalid login credentials") || normalized.includes("invalid email")) {
-    return "Invalid email or password. Please try again.";
+  if (normalized.includes("invalid login credentials")) {
+    return "Invalid email or password.";
   }
   if (normalized.includes("email not confirmed")) {
     return "Please confirm your email address before signing in.";
   }
-  if (
-    normalized.includes("failed to fetch") ||
-    normalized.includes("network") ||
-    normalized.includes("timeout")
-  ) {
-    return "Unable to sign in right now. Please try again later.";
+  if (normalized.includes("failed to fetch") || normalized.includes("network")) {
+    return "Network error — check your connection and try again.";
   }
-  return "Unable to sign in right now. Please try again later.";
+  return message || "Unable to sign in right now. Please try again later.";
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden="true" className="size-4.5">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2.5 24 .5 14.6.5 6.5 5.9 2.6 13.8l7.8 6.1C12.3 13.7 17.6 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.5 24.5c0-1.6-.1-3.2-.4-4.7H24v9h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4.1 7.1-10.2 7.1-17.4z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.4 28.1a14.6 14.6 0 0 1 0-8.2l-7.8-6.1a24 24 0 0 0 0 20.4l7.8-6.1z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 47.5c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.4 0-11.7-4.2-13.6-10.1l-7.8 6.1C6.5 42.1 14.6 47.5 24 47.5z"
+      />
+    </svg>
+  );
 }
 
 function AuthPage() {
@@ -51,43 +71,54 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
-  async function signUp() {
-    if (loading) return;
-    if (!email.trim() || password.length < 6) {
-      setError("Enter your email and a password of at least 6 characters.");
-      return;
-    }
+  // If a session already exists (e.g. returning from Google OAuth), go to /admin.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) navigate({ to: "/admin", replace: true });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) navigate({ to: "/admin", replace: true });
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [navigate]);
+
+  async function signInWithGoogle() {
+    if (googleLoading || loading) return;
     setError(null);
-    setLoading(true);
+    setGoogleLoading(true);
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: { emailRedirectTo: `${window.location.origin}/auth` },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth`,
+        extraParams: { prompt: "select_account" },
       });
-      if (signUpError) {
-        const friendly = describeError(signUpError.message);
+      if (result.error) {
+        const friendly = describeError(String(result.error.message ?? result.error));
         setError(friendly);
         toast.error(friendly);
         return;
       }
-      toast.success("Account created. Check your inbox to confirm it, then sign in.");
-      setMode("signin");
-    } catch {
-      const friendly = "Unable to sign in right now. Please try again later.";
+      if (result.redirected) return;
+      await router.invalidate();
+      navigate({ to: "/admin", replace: true });
+    } catch (cause) {
+      const friendly = describeError(cause instanceof Error ? cause.message : "");
       setError(friendly);
       toast.error(friendly);
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   }
 
   async function signIn(event: React.FormEvent) {
     event.preventDefault();
-    if (loading) return;
+    if (loading || googleLoading) return;
     setError(null);
     setLoading(true);
     try {
@@ -103,8 +134,8 @@ function AuthPage() {
       }
       await router.invalidate();
       navigate({ to: "/admin", replace: true });
-    } catch {
-      const friendly = "Unable to sign in right now. Please try again later.";
+    } catch (cause) {
+      const friendly = describeError(cause instanceof Error ? cause.message : "");
       setError(friendly);
       toast.error(friendly);
     } finally {
@@ -157,35 +188,33 @@ function AuthPage() {
             </p>
           ) : null}
 
-          {mode === "signin" ? (
-            <Button type="submit" size="lg" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="lg"
-              className="w-full"
-              disabled={loading}
-              onClick={signUp}
-            >
-              {loading ? <Loader2 className="size-4 animate-spin" /> : null} Create account
-            </Button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => {
-              setError(null);
-              setMode(mode === "signin" ? "signup" : "signin");
-            }}
-            className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
-          >
-            {mode === "signin"
-              ? "First time here? Create your administrator account"
-              : "Back to sign in"}
-          </button>
+          <Button type="submit" size="lg" className="w-full" disabled={loading || googleLoading}>
+            {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
+          </Button>
         </form>
+
+        <div className="my-5 flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">or</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="w-full gap-2.5"
+          disabled={loading || googleLoading}
+          onClick={signInWithGoogle}
+        >
+          {googleLoading ? <Loader2 className="size-4 animate-spin" /> : <GoogleIcon />}
+          Continue with Google
+        </Button>
+
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          Accounts are provisioned by the operator. New administrator accounts cannot be created
+          here.
+        </p>
       </div>
     </div>
   );
