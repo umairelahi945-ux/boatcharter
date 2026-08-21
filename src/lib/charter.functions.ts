@@ -307,9 +307,9 @@ export const requestBooking = createServerFn({ method: "POST" })
       boatId: boat.id,
       boatTitle: boat.title,
       customerName: data.customerName,
-      amountCents: quote.totalCents,
+      amountCents: split.depositCents,
       status: charge.status,
-      notes: charge.message,
+      notes: `${charge.message} · 20% deposit`,
     });
 
     return {
@@ -320,6 +320,9 @@ export const requestBooking = createServerFn({ method: "POST" })
       paymentStatus: charge.status,
       bookingStatus: charge.status === "paid" ? "confirmed" : "pending",
       totalCents: quote.totalCents,
+      depositCents: split.depositCents,
+      balanceCents: quote.totalCents - paidCents,
+      amountPaidCents: paidCents,
       subtotalCents: quote.subtotalCents,
       feesCents: quote.feesCents,
       duration: quote.duration,
