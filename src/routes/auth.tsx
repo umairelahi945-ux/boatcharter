@@ -52,6 +52,38 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+
+  async function signUp() {
+    if (loading) return;
+    if (!email.trim() || password.length < 6) {
+      setError("Enter your email and a password of at least 6 characters.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth` },
+      });
+      if (signUpError) {
+        const friendly = describeError(signUpError.message);
+        setError(friendly);
+        toast.error(friendly);
+        return;
+      }
+      toast.success("Account created. Check your inbox to confirm it, then sign in.");
+      setMode("signin");
+    } catch {
+      const friendly = "Unable to sign in right now. Please try again later.";
+      setError(friendly);
+      toast.error(friendly);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function signIn(event: React.FormEvent) {
     event.preventDefault();
@@ -125,9 +157,34 @@ function AuthPage() {
             </p>
           ) : null}
 
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
-          </Button>
+          {mode === "signin" ? (
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              disabled={loading}
+              onClick={signUp}
+            >
+              {loading ? <Loader2 className="size-4 animate-spin" /> : null} Create account
+            </Button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setMode(mode === "signin" ? "signup" : "signin");
+            }}
+            className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
+          >
+            {mode === "signin"
+              ? "First time here? Create your administrator account"
+              : "Back to sign in"}
+          </button>
         </form>
       </div>
     </div>
