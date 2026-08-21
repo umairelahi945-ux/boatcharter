@@ -78,7 +78,6 @@ export function BookingDialog({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [demoOutcome, setDemoOutcome] = useState<"success" | "failure" | "pending">("success");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
 
