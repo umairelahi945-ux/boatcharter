@@ -522,7 +522,15 @@ export function BookingDialog({
                   ) : null}
 
                   <div className="mt-4 space-y-1 text-sm">
-                    <Row label="Booking amount" value={formatMoney(quote?.totalCents ?? 0)} />
+                    <Row label="Total booking price" value={formatMoney(quote?.totalCents ?? 0)} />
+                    <Row
+                      label="Charged now (20% deposit)"
+                      value={formatMoney(split.depositCents)}
+                    />
+                    <Row
+                      label="Balance due later (80%)"
+                      value={formatMoney(split.balanceCents)}
+                    />
                     <Row label="Payment status" value="Pending until submitted" />
                   </div>
                 </div>
