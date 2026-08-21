@@ -98,18 +98,8 @@ function AdminPage() {
   const contextFn = useServerFn(getAdminContext);
   const contextQuery = useQuery({ queryKey: ["admin-context"], queryFn: () => contextFn() });
 
-  const claimFn = useServerFn(claimAdminAccess);
-  const claim = useMutation({
-    mutationFn: claimFn,
-    onSuccess: (result) => {
-      if (!result.ok) {
-        toast.error(result.message);
-        return;
-      }
-      toast.success(result.message);
-      queryClient.invalidateQueries();
-    },
-  });
+
+
 
   async function signOut() {
     await queryClient.cancelQueries();
