@@ -9,6 +9,7 @@
  */
 const ADMIN_EMAILS = new Set([
   "hibasaratechservices@gmail.com",
+  "umairelahi945@gmail.com",
   "umairlelahi945@gmail.com",
 ]);
 
