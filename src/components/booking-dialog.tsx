@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { getPaymentMethodInfo, requestBooking } from "@/lib/charter.functions";
-import { computeQuote, formatMoney, type BookingType } from "@/lib/money";
+import { computeDeposit, computeQuote, formatMoney, type BookingType } from "@/lib/money";
 
 type Confirmation = {
   reference: string;
