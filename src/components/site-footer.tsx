@@ -51,16 +51,13 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold tracking-wide text-white uppercase">Operations</h3>
+          <h3 className="text-sm font-semibold tracking-wide text-white uppercase">Good to know</h3>
           <ul className="mt-4 space-y-2.5 text-sm text-white/60">
-            <li>
-              <Link to="/admin" className="hover:text-primary">
-                Admin Dashboard
-              </Link>
-            </li>
             <li>Secure card payments only</li>
+            <li>20% deposit at booking, balance due before departure</li>
           </ul>
         </div>
+
       </div>
       <div className="border-t border-white/10">
         <div className="container-page py-6 text-xs text-white/45">
