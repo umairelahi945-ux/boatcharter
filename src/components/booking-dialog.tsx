@@ -108,7 +108,8 @@ export function BookingDialog({
         message: result.message,
         boatTitle: result.boatTitle,
       });
-      if (result.paymentStatus === "paid") toast.success("Booking confirmed and payment captured.");
+      if (result.paymentStatus === "paid")
+        toast.success("Booking confirmed — 20% deposit captured.");
       else if (result.paymentStatus === "failed")
         toast.error("Booking saved, but the payment failed.");
       else toast.message("Booking saved. Payment is pending confirmation.");
