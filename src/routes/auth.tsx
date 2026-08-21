@@ -6,26 +6,44 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Staff Sign In — Boat Charter" },
+      { title: "Administrator Sign In — Boat Charter" },
       {
         name: "description",
-        content: "Sign in to the Boat Charter operations console to manage fleet, bookings and payments.",
+        content:
+          "Sign in to the Boat Charter operations console to manage fleet, bookings and payments.",
       },
-      { property: "og:title", content: "Staff Sign In — Boat Charter" },
+      { property: "og:title", content: "Administrator Sign In — Boat Charter" },
       { property: "og:description", content: "Access the Boat Charter operations console." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: AuthPage,
 });
+
+function describeError(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("invalid login credentials") || normalized.includes("invalid email")) {
+    return "Invalid email or password. Please try again.";
+  }
+  if (normalized.includes("email not confirmed")) {
+    return "Please confirm your email address before signing in.";
+  }
+  if (
+    normalized.includes("failed to fetch") ||
+    normalized.includes("network") ||
+    normalized.includes("timeout")
+  ) {
+    return "Unable to sign in right now. Please try again later.";
+  }
+  return "Unable to sign in right now. Please try again later.";
+}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -33,51 +51,65 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
 
-  async function afterAuth() {
-    await router.invalidate();
-    navigate({ to: "/admin", replace: true });
+  async function signUp() {
+    if (loading) return;
+    if (!email.trim() || password.length < 6) {
+      setError("Enter your email and a password of at least 6 characters.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth` },
+      });
+      if (signUpError) {
+        const friendly = describeError(signUpError.message);
+        setError(friendly);
+        toast.error(friendly);
+        return;
+      }
+      toast.success("Account created. Check your inbox to confirm it, then sign in.");
+      setMode("signin");
+    } catch {
+      const friendly = "Unable to sign in right now. Please try again later.";
+      setError(friendly);
+      toast.error(friendly);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function signIn(event: React.FormEvent) {
     event.preventDefault();
+    if (loading) return;
+    setError(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (signInError) {
+        const friendly = describeError(signInError.message);
+        setError(friendly);
+        toast.error(friendly);
+        return;
+      }
+      await router.invalidate();
+      navigate({ to: "/admin", replace: true });
+    } catch {
+      const friendly = "Unable to sign in right now. Please try again later.";
+      setError(friendly);
+      toast.error(friendly);
+    } finally {
+      setLoading(false);
     }
-    await afterAuth();
-  }
-
-  async function signUp(event: React.FormEvent) {
-    event.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: `${window.location.origin}/admin` },
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Account created. You can sign in now.");
-    await afterAuth();
-  }
-
-  async function google() {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error("Google sign-in failed. Please try again.");
-      return;
-    }
-    if (result.redirected) return;
-    await afterAuth();
   }
 
   return (
@@ -90,93 +122,71 @@ function AuthPage() {
           <h1 className="font-display text-2xl font-semibold">Operations console</h1>
         </div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Sign in to manage the fleet, bookings, payments and finances.
+          Administrator sign in. Access is restricted to authorized accounts.
         </p>
 
-        <Tabs defaultValue="signin" className="mt-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign in</TabsTrigger>
-            <TabsTrigger value="signup">Create account</TabsTrigger>
-          </TabsList>
+        <form onSubmit={signIn} className="mt-6 space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="auth-email">Email</Label>
+            <Input
+              id="auth-email"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              maxLength={255}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="auth-password">Password</Label>
+            <Input
+              id="auth-password"
+              type="password"
+              autoComplete="current-password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </div>
 
-          <TabsContent value="signin">
-            <form onSubmit={signIn} className="mt-4 space-y-4">
-              <Fields
-                email={email}
-                password={password}
-                onEmail={setEmail}
-                onPassword={setPassword}
-              />
-              <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
-              </Button>
-            </form>
-          </TabsContent>
+          {error ? (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          ) : null}
 
-          <TabsContent value="signup">
-            <form onSubmit={signUp} className="mt-4 space-y-4">
-              <Fields
-                email={email}
-                password={password}
-                onEmail={setEmail}
-                onPassword={setPassword}
-              />
-              <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="size-4 animate-spin" /> : null} Create account
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+          {mode === "signin" ? (
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              size="lg"
+              className="w-full"
+              disabled={loading}
+              onClick={signUp}
+            >
+              {loading ? <Loader2 className="size-4 animate-spin" /> : null} Create account
+            </Button>
+          )}
 
-        <div className="my-6 flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <Separator className="flex-1" />
-        </div>
-
-        <Button variant="outline" size="lg" className="w-full" onClick={google}>
-          Continue with Google
-        </Button>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setMode(mode === "signin" ? "signup" : "signin");
+            }}
+            className="w-full text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
+          >
+            {mode === "signin"
+              ? "First time here? Create your administrator account"
+              : "Back to sign in"}
+          </button>
+        </form>
       </div>
     </div>
-  );
-}
-
-function Fields({
-  email,
-  password,
-  onEmail,
-  onPassword,
-}: {
-  email: string;
-  password: string;
-  onEmail: (value: string) => void;
-  onPassword: (value: string) => void;
-}) {
-  return (
-    <>
-      <div className="space-y-1.5">
-        <Label htmlFor="auth-email">Email</Label>
-        <Input
-          id="auth-email"
-          type="email"
-          required
-          value={email}
-          onChange={(event) => onEmail(event.target.value)}
-          maxLength={255}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="auth-password">Password</Label>
-        <Input
-          id="auth-password"
-          type="password"
-          required
-          minLength={6}
-          value={password}
-          onChange={(event) => onPassword(event.target.value)}
-        />
-      </div>
-    </>
   );
 }

@@ -19,58 +19,25 @@ const boatSchema = z.object({
 
 export type BoatFormInput = z.input<typeof boatSchema>;
 
-/** Session + role probe used by the admin shell. */
+/** Session probe used by the admin shell. Authorization is decided server-side. */
 export const getAdminContext = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    const { getAdminClient } = await import("./supabase-public.server");
-    const supabase = await getAdminClient();
-    const { count } = await supabase
-      .from("user_roles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "admin");
-
+    const { isAdminEmail } = await import("./admin-guard.server");
+    const email = (context.claims as { email?: string } | null)?.email ?? null;
     return {
       userId: context.userId,
-      email: (context.claims as { email?: string } | null)?.email ?? null,
-      isAdmin: Boolean(data),
-      adminExists: (count ?? 0) > 0,
+      email,
+      isAdmin: isAdminEmail(email),
     };
   });
 
-/** First signed-in user may claim ownership when no administrator exists yet. */
-export const claimAdminAccess = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { getAdminClient } = await import("./supabase-public.server");
-    const supabase = await getAdminClient();
-    const { count } = await supabase
-      .from("user_roles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "admin");
-
-    if ((count ?? 0) > 0) {
-      return { ok: false as const, message: "An administrator already exists for this workspace." };
-    }
-    const { error } = await supabase
-      .from("user_roles")
-      .insert({ user_id: context.userId, role: "admin" });
-    if (error) {
-      console.error("[admin] claim failed", error);
-      return { ok: false as const, message: "We could not grant administrator access." };
-    }
-    return { ok: true as const, message: "Administrator access granted." };
-  });
-
-async function adminClient(context: { supabase: unknown; userId: string }) {
+async function adminClient(context: { claims: unknown }) {
   const { assertAdmin } = await import("./admin-guard.server");
-  await assertAdmin(context.supabase, context.userId);
+  assertAdmin(context.claims as { email?: unknown } | null);
   const { getAdminClient } = await import("./supabase-public.server");
   return getAdminClient();
+
 }
 
 export const getDashboardStats = createServerFn({ method: "GET" })
