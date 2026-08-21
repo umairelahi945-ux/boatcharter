@@ -176,6 +176,8 @@ export const requestBooking = createServerFn({ method: "POST" })
       };
     }
 
+    const split = computeDeposit(quote.totalCents);
+
     const reference = generateReference();
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
