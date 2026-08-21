@@ -132,12 +132,32 @@ export async function applyPaymentStatus(options: {
     booking = data ?? null;
 
     if (booking) {
-      const update: { payment_status: string; status?: string } = {
+      const update: {
+        payment_status: string;
+        status?: string;
+        amount_paid_cents?: number;
+        balance_due_cents?: number;
+      } = {
         payment_status: options.status,
       };
-      if (options.status === "paid") update.status = "confirmed";
-      if (options.status === "refunded" || options.status === "cancelled")
+      if (options.status === "paid") {
+        update.status = "confirmed";
+        // Only the captured deposit counts as paid; the rest stays outstanding.
+        update.amount_paid_cents = Number(payment.amount_cents);
+        update.balance_due_cents = Math.max(
+          Number(booking.total_price_cents) - Number(payment.amount_cents),
+          0,
+        );
+      }
+      if (options.status === "refunded" || options.status === "cancelled") {
         update.status = "cancelled";
+        update.amount_paid_cents = 0;
+        update.balance_due_cents = Number(booking.total_price_cents);
+      }
+      if (options.status === "failed" || options.status === "pending") {
+        update.amount_paid_cents = 0;
+        update.balance_due_cents = Number(booking.total_price_cents);
+      }
       await supabaseAdmin.from("bookings").update(update).eq("id", booking.id);
     }
   }
