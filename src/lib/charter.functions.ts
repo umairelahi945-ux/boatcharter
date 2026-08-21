@@ -239,12 +239,13 @@ export const requestBooking = createServerFn({ method: "POST" })
       customerName: data.customerName,
       amountCents: quote.totalCents,
       status: "pending",
-      notes: "Booking request received from the storefront",
+      notes: `Booking request received from the storefront · total ${quote.totalCents} cents, 20% deposit ${split.depositCents} cents`,
     });
 
     const config = getPaymentConfig();
+    // Only the 20% deposit is charged at booking time.
     const charge = await createCharge({
-      amountCents: quote.totalCents,
+      amountCents: split.depositCents,
       currency: "USD",
       reference,
       customerEmail: data.customerEmail,
@@ -259,14 +260,18 @@ export const requestBooking = createServerFn({ method: "POST" })
       last_four_digits: charge.lastFour,
       payment_status: charge.status,
       transaction_id: charge.transactionId,
-      amount_cents: quote.totalCents,
+      amount_cents: split.depositCents,
     });
+
+    const paidCents = charge.status === "paid" ? split.depositCents : 0;
 
     await supabase
       .from("bookings")
       .update({
         payment_status: charge.status,
         status: charge.status === "paid" ? "confirmed" : "pending",
+        amount_paid_cents: paidCents,
+        balance_due_cents: quote.totalCents - paidCents,
       })
       .eq("id", booking.id);
 
@@ -276,11 +281,11 @@ export const requestBooking = createServerFn({ method: "POST" })
       customerName: data.customerName,
       boatId: boat.id,
       boatTitle: boat.title,
-      amountCents: quote.totalCents,
+      amountCents: split.depositCents,
       transactionType: "booking_payment",
       paymentMethod: config.methodType,
       paymentStatus: charge.status,
-      notes: charge.message,
+      notes: `${charge.message} · 20% deposit of ${quote.totalCents} cents total`,
     });
 
     await addHistory({
