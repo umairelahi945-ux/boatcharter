@@ -260,10 +260,16 @@ function OverviewTab() {
         icon={TrendingUp}
       />
       <StatCard
-        label="Captured payments"
+        label="Deposits captured (20%)"
         value={formatMoney(s.paidRevenueCents)}
         hint={`${s.totalPayments} transactions`}
         icon={BadgeDollarSign}
+      />
+      <StatCard
+        label="Outstanding balance (80%)"
+        value={formatMoney(s.outstandingBalanceCents)}
+        hint={`Deposits due ${formatMoney(s.depositsDueCents)}`}
+        icon={Wallet}
       />
       <StatCard
         label="Pending payments"
