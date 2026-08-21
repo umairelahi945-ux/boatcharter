@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Anchor, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 
@@ -91,7 +92,8 @@ export function SiteHeader() {
 
       {/* Mobile drawer: backdrop + panel. Both live above the page content and
           swallow every pointer event so the page underneath is inert. */}
-      {open ? (
+      {open && typeof document !== "undefined"
+        ? createPortal(
         <div className="fixed inset-0 z-[100] md:hidden">
           <button
             type="button"
@@ -142,8 +144,10 @@ export function SiteHeader() {
               </Link>
             </nav>
           </div>
-        </div>
-      ) : null}
+        </div>,
+            document.body,
+          )
+        : null}
     </header>
   );
 }
