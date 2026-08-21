@@ -260,10 +260,16 @@ function OverviewTab() {
         icon={TrendingUp}
       />
       <StatCard
-        label="Captured payments"
+        label="Deposits captured (20%)"
         value={formatMoney(s.paidRevenueCents)}
         hint={`${s.totalPayments} transactions`}
         icon={BadgeDollarSign}
+      />
+      <StatCard
+        label="Outstanding balance (80%)"
+        value={formatMoney(s.outstandingBalanceCents)}
+        hint={`Deposits due ${formatMoney(s.depositsDueCents)}`}
+        icon={Wallet}
       />
       <StatCard
         label="Pending payments"
@@ -616,6 +622,9 @@ function BookingsTab() {
             <TableHead>Boat</TableHead>
             <TableHead>Window</TableHead>
             <TableHead>Total</TableHead>
+            <TableHead>Deposit (20%)</TableHead>
+            <TableHead>Paid</TableHead>
+            <TableHead>Balance</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -636,6 +645,11 @@ function BookingsTab() {
                 {formatDateTime(booking.end_date)}
               </TableCell>
               <TableCell>{formatMoney(booking.total_price_cents)}</TableCell>
+              <TableCell>{formatMoney(booking.deposit_cents)}</TableCell>
+              <TableCell>{formatMoney(booking.amount_paid_cents)}</TableCell>
+              <TableCell className="font-medium">
+                {formatMoney(booking.balance_due_cents)}
+              </TableCell>
               <TableCell>
                 <StatusBadge status={booking.payment_status} />
               </TableCell>

@@ -30,6 +30,22 @@ export function formatDate(value: string | Date | null | undefined): string {
 
 export const SERVICE_FEE_BPS = 1000; // 10% service fee, in basis points
 
+/** Customers pay a 20% deposit at booking time; the rest is due later. */
+export const DEPOSIT_BPS = 2000;
+
+export type DepositSplit = {
+  totalCents: number;
+  depositCents: number;
+  balanceCents: number;
+};
+
+/** Splits a booking total into the 20% deposit due now and the 80% balance. */
+export function computeDeposit(totalCents: number): DepositSplit {
+  const total = Math.max(0, Math.round(Number(totalCents) || 0));
+  const depositCents = Math.round((total * DEPOSIT_BPS) / 10000);
+  return { totalCents: total, depositCents, balanceCents: total - depositCents };
+}
+
 export const MIN_HOURS = 2;
 export const MIN_DAYS = 1;
 

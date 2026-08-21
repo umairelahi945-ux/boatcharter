@@ -70,6 +70,8 @@ export type Database = {
       }
       bookings: {
         Row: {
+          amount_paid_cents: number
+          balance_due_cents: number
           boat_id: string | null
           boat_title: string
           booking_type: string
@@ -78,6 +80,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          deposit_cents: number
           duration: number
           end_date: string
           fees_cents: number
@@ -92,6 +95,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          amount_paid_cents?: number
+          balance_due_cents?: number
           boat_id?: string | null
           boat_title?: string
           booking_type: string
@@ -100,6 +105,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           customer_phone: string
+          deposit_cents?: number
           duration: number
           end_date: string
           fees_cents?: number
@@ -114,6 +120,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          amount_paid_cents?: number
+          balance_due_cents?: number
           boat_id?: string | null
           boat_title?: string
           booking_type?: string
@@ -122,6 +130,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           customer_phone?: string
+          deposit_cents?: number
           duration?: number
           end_date?: string
           fees_cents?: number

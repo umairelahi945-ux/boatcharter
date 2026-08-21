@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { computeQuote } from "./money";
+import { computeDeposit, computeQuote } from "./money";
 
 const bookingInputSchema = z.object({
   boatId: z.string().uuid("Please choose a boat."),
@@ -176,6 +176,8 @@ export const requestBooking = createServerFn({ method: "POST" })
       };
     }
 
+    const split = computeDeposit(quote.totalCents);
+
     const reference = generateReference();
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
@@ -194,6 +196,9 @@ export const requestBooking = createServerFn({ method: "POST" })
         subtotal_cents: quote.subtotalCents,
         fees_cents: quote.feesCents,
         total_price_cents: quote.totalCents,
+        deposit_cents: split.depositCents,
+        amount_paid_cents: 0,
+        balance_due_cents: quote.totalCents,
       })
       .select()
       .single();
@@ -234,12 +239,13 @@ export const requestBooking = createServerFn({ method: "POST" })
       customerName: data.customerName,
       amountCents: quote.totalCents,
       status: "pending",
-      notes: "Booking request received from the storefront",
+      notes: `Booking request received from the storefront · total ${quote.totalCents} cents, 20% deposit ${split.depositCents} cents`,
     });
 
     const config = getPaymentConfig();
+    // Only the 20% deposit is charged at booking time.
     const charge = await createCharge({
-      amountCents: quote.totalCents,
+      amountCents: split.depositCents,
       currency: "USD",
       reference,
       customerEmail: data.customerEmail,
@@ -254,14 +260,18 @@ export const requestBooking = createServerFn({ method: "POST" })
       last_four_digits: charge.lastFour,
       payment_status: charge.status,
       transaction_id: charge.transactionId,
-      amount_cents: quote.totalCents,
+      amount_cents: split.depositCents,
     });
+
+    const paidCents = charge.status === "paid" ? split.depositCents : 0;
 
     await supabase
       .from("bookings")
       .update({
         payment_status: charge.status,
         status: charge.status === "paid" ? "confirmed" : "pending",
+        amount_paid_cents: paidCents,
+        balance_due_cents: quote.totalCents - paidCents,
       })
       .eq("id", booking.id);
 
@@ -271,11 +281,11 @@ export const requestBooking = createServerFn({ method: "POST" })
       customerName: data.customerName,
       boatId: boat.id,
       boatTitle: boat.title,
-      amountCents: quote.totalCents,
+      amountCents: split.depositCents,
       transactionType: "booking_payment",
       paymentMethod: config.methodType,
       paymentStatus: charge.status,
-      notes: charge.message,
+      notes: `${charge.message} · 20% deposit of ${quote.totalCents} cents total`,
     });
 
     await addHistory({
@@ -297,9 +307,9 @@ export const requestBooking = createServerFn({ method: "POST" })
       boatId: boat.id,
       boatTitle: boat.title,
       customerName: data.customerName,
-      amountCents: quote.totalCents,
+      amountCents: split.depositCents,
       status: charge.status,
-      notes: charge.message,
+      notes: `${charge.message} · 20% deposit`,
     });
 
     return {
@@ -310,6 +320,9 @@ export const requestBooking = createServerFn({ method: "POST" })
       paymentStatus: charge.status,
       bookingStatus: charge.status === "paid" ? "confirmed" : "pending",
       totalCents: quote.totalCents,
+      depositCents: split.depositCents,
+      balanceCents: quote.totalCents - paidCents,
+      amountPaidCents: paidCents,
       subtotalCents: quote.subtotalCents,
       feesCents: quote.feesCents,
       duration: quote.duration,

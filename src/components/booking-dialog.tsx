@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { getPaymentMethodInfo, requestBooking } from "@/lib/charter.functions";
-import { computeQuote, formatMoney, type BookingType } from "@/lib/money";
+import { computeDeposit, computeQuote, formatMoney, type BookingType } from "@/lib/money";
 
 type Confirmation = {
   reference: string;
@@ -34,6 +34,9 @@ type Confirmation = {
   paymentStatus: string;
   bookingStatus: string;
   totalCents: number;
+  depositCents: number;
+  balanceCents: number;
+  amountPaidCents: number;
   message: string;
   boatTitle: string;
 };
@@ -99,10 +102,14 @@ export function BookingDialog({
         paymentStatus: result.paymentStatus,
         bookingStatus: result.bookingStatus,
         totalCents: result.totalCents,
+        depositCents: result.depositCents,
+        balanceCents: result.balanceCents,
+        amountPaidCents: result.amountPaidCents,
         message: result.message,
         boatTitle: result.boatTitle,
       });
-      if (result.paymentStatus === "paid") toast.success("Booking confirmed and payment captured.");
+      if (result.paymentStatus === "paid")
+        toast.success("Booking confirmed — 20% deposit captured.");
       else if (result.paymentStatus === "failed")
         toast.error("Booking saved, but the payment failed.");
       else toast.message("Booking saved. Payment is pending confirmation.");
@@ -120,6 +127,8 @@ export function BookingDialog({
       endISO: new Date(endValue).toISOString(),
     });
   }, [boat, bookingType, startValue, endValue]);
+
+  const split = computeDeposit(quote?.totalCents ?? 0);
 
   if (!boat) return null;
 
@@ -229,10 +238,22 @@ export function BookingDialog({
                 </div>
                 <Separator />
                 <div className="flex justify-between gap-4">
-                  <dt className="font-medium">Total</dt>
+                  <dt className="text-muted-foreground">Total booking price</dt>
+                  <dd className="font-medium">{formatMoney(confirmation.totalCents)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="font-medium">20% deposit charged now</dt>
                   <dd className="font-display text-xl font-semibold">
-                    {formatMoney(confirmation.totalCents)}
+                    {formatMoney(confirmation.depositCents)}
                   </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Amount paid</dt>
+                  <dd className="font-medium">{formatMoney(confirmation.amountPaidCents)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Remaining balance (80%)</dt>
+                  <dd className="font-medium">{formatMoney(confirmation.balanceCents)}</dd>
                 </div>
               </dl>
             </div>
@@ -387,10 +408,22 @@ export function BookingDialog({
                     <Row label="Service fee (10%)" value={formatMoney(quote?.feesCents ?? 0)} />
                     <Separator className="my-2" />
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Total</span>
-                      <span className="font-display text-2xl font-semibold">
+                      <span className="font-medium">Total booking price</span>
+                      <span className="font-display text-xl font-semibold">
                         {formatMoney(quote?.totalCents ?? 0)}
                       </span>
+                    </div>
+                    <div className="mt-2 rounded-lg bg-primary/10 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-primary">20% deposit due now</span>
+                        <span className="font-display text-2xl font-semibold text-primary">
+                          {formatMoney(split.depositCents)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Remaining 80% balance</span>
+                        <span className="font-medium">{formatMoney(split.balanceCents)}</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -489,7 +522,15 @@ export function BookingDialog({
                   ) : null}
 
                   <div className="mt-4 space-y-1 text-sm">
-                    <Row label="Booking amount" value={formatMoney(quote?.totalCents ?? 0)} />
+                    <Row label="Total booking price" value={formatMoney(quote?.totalCents ?? 0)} />
+                    <Row
+                      label="Charged now (20% deposit)"
+                      value={formatMoney(split.depositCents)}
+                    />
+                    <Row
+                      label="Balance due later (80%)"
+                      value={formatMoney(split.balanceCents)}
+                    />
                     <Row label="Payment status" value="Pending until submitted" />
                   </div>
                 </div>

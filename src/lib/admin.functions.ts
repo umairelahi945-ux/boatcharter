@@ -80,7 +80,11 @@ export const getDashboardStats = createServerFn({ method: "GET" })
 
     const [boats, bookings, records, payments] = await Promise.all([
       supabase.from("boats").select("id, is_available").is("archived_at", null),
-      supabase.from("bookings").select("id, status, payment_status, total_price_cents"),
+      supabase
+        .from("bookings")
+        .select(
+          "id, status, payment_status, total_price_cents, deposit_cents, amount_paid_cents, balance_due_cents",
+        ),
       supabase.from("financial_records").select("amount_cents, transaction_type, payment_status"),
       supabase.from("payments").select("id, payment_status, amount_cents"),
     ]);
@@ -111,6 +115,15 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       estimatedRevenueCents: bookingRows
         .filter((b) => b.status !== "cancelled")
         .reduce((total, b) => total + Number(b.total_price_cents), 0),
+      depositsDueCents: bookingRows
+        .filter((b) => b.status !== "cancelled")
+        .reduce((total, b) => total + Number(b.deposit_cents ?? 0), 0),
+      outstandingBalanceCents: bookingRows
+        .filter((b) => b.status !== "cancelled")
+        .reduce((total, b) => total + Number(b.balance_due_cents ?? 0), 0),
+      collectedDepositsCents: bookingRows
+        .filter((b) => b.status !== "cancelled")
+        .reduce((total, b) => total + Number(b.amount_paid_cents ?? 0), 0),
       totalPayments: paymentRows.length,
       paidRevenueCents: paid,
       pendingPaymentsCents: pending,
