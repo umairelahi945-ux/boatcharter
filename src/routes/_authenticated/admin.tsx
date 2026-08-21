@@ -622,6 +622,9 @@ function BookingsTab() {
             <TableHead>Boat</TableHead>
             <TableHead>Window</TableHead>
             <TableHead>Total</TableHead>
+            <TableHead>Deposit (20%)</TableHead>
+            <TableHead>Paid</TableHead>
+            <TableHead>Balance</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
