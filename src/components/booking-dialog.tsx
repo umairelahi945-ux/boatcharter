@@ -238,10 +238,22 @@ export function BookingDialog({
                 </div>
                 <Separator />
                 <div className="flex justify-between gap-4">
-                  <dt className="font-medium">Total</dt>
+                  <dt className="text-muted-foreground">Total booking price</dt>
+                  <dd className="font-medium">{formatMoney(confirmation.totalCents)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="font-medium">20% deposit charged now</dt>
                   <dd className="font-display text-xl font-semibold">
-                    {formatMoney(confirmation.totalCents)}
+                    {formatMoney(confirmation.depositCents)}
                   </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Amount paid</dt>
+                  <dd className="font-medium">{formatMoney(confirmation.amountPaidCents)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Remaining balance (80%)</dt>
+                  <dd className="font-medium">{formatMoney(confirmation.balanceCents)}</dd>
                 </div>
               </dl>
             </div>
