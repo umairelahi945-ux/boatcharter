@@ -173,7 +173,6 @@ export function BookingDialog({
         bookingType,
         startISO: new Date(startValue).toISOString(),
         endISO: new Date(endValue).toISOString(),
-        demoOutcome,
       },
     });
   }
@@ -185,8 +184,6 @@ export function BookingDialog({
       mutation.reset();
     }
   }
-
-  const isDemo = paymentInfo.data?.mode === "demo";
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -497,29 +494,6 @@ export function BookingDialog({
                     <Lock className="size-3.5" /> Card details are tokenised by the provider and
                     never stored here.
                   </div>
-
-                  {isDemo ? (
-                    <div className="mt-4 space-y-2 rounded-lg bg-warning/15 p-3">
-                      <p className="text-xs font-semibold text-warning-foreground">
-                        Test mode — no live credentials configured
-                      </p>
-                      <Select
-                        value={demoOutcome}
-                        onValueChange={(value) =>
-                          setDemoOutcome(value as "success" | "failure" | "pending")
-                        }
-                      >
-                        <SelectTrigger className="bg-background">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="success">Test Payment Successful</SelectItem>
-                          <SelectItem value="pending">Test Payment Pending</SelectItem>
-                          <SelectItem value="failure">Test Payment Failed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ) : null}
 
                   <div className="mt-4 space-y-1 text-sm">
                     <Row label="Total booking price" value={formatMoney(quote?.totalCents ?? 0)} />
