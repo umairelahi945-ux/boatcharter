@@ -115,6 +115,15 @@ export const getDashboardStats = createServerFn({ method: "GET" })
       estimatedRevenueCents: bookingRows
         .filter((b) => b.status !== "cancelled")
         .reduce((total, b) => total + Number(b.total_price_cents), 0),
+      depositsDueCents: bookingRows
+        .filter((b) => b.status !== "cancelled")
+        .reduce((total, b) => total + Number(b.deposit_cents ?? 0), 0),
+      outstandingBalanceCents: bookingRows
+        .filter((b) => b.status !== "cancelled")
+        .reduce((total, b) => total + Number(b.balance_due_cents ?? 0), 0),
+      collectedDepositsCents: bookingRows
+        .filter((b) => b.status !== "cancelled")
+        .reduce((total, b) => total + Number(b.amount_paid_cents ?? 0), 0),
       totalPayments: paymentRows.length,
       paidRevenueCents: paid,
       pendingPaymentsCents: pending,
