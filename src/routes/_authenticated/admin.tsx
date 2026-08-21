@@ -143,20 +143,12 @@ function AdminPage() {
     return (
       <div className="container-page flex min-h-[60vh] items-center justify-center py-14">
         <Card className="max-w-md p-8 text-center">
-          <ShieldCheck className="mx-auto size-8 text-primary" />
-          <h1 className="mt-4 font-display text-2xl font-semibold">Administrator access</h1>
+          <ShieldCheck className="mx-auto size-8 text-destructive" />
+          <h1 className="mt-4 font-display text-2xl font-semibold">Access denied</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {context.adminExists
-              ? "Your account does not have administrator permissions. Ask an existing administrator to grant access."
-              : "No administrator exists yet. Claim ownership of this workspace to open the console."}
+            This account is not authorized to access the administrator dashboard.
           </p>
           <div className="mt-6 flex flex-col gap-2">
-            {!context.adminExists ? (
-              <Button onClick={() => claim.mutate({} as never)} disabled={claim.isPending}>
-                {claim.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                Claim administrator access
-              </Button>
-            ) : null}
             <Button variant="outline" onClick={signOut}>
               <LogOut className="size-4" /> Sign out
             </Button>
@@ -166,6 +158,7 @@ function AdminPage() {
       </div>
     );
   }
+
 
   return (
     <div className="container-page py-10">
