@@ -37,7 +37,6 @@ import {
   adminListFinancialHistory,
   adminListFinancialRecords,
   adminListPayments,
-  claimAdminAccess,
   createAdjustment,
   createBoat,
   deleteBoat,
