@@ -121,7 +121,7 @@ export function FleetExplorer({ limit }: { limit?: number }) {
           </div>
         ) : boatsQuery.isError ? (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-10 text-center">
-            <p className="font-medium text-destructive">We could not load the fleet.</p>
+            <p className="font-medium text-destructive">We could not load the yachts.</p>
             <Button variant="outline" className="mt-4" onClick={() => boatsQuery.refetch()}>
               Try again
             </Button>

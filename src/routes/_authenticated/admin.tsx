@@ -54,7 +54,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Admin Dashboard — Boat Charter" },
-      { name: "description", content: "Manage fleet, bookings, payments and finances." },
+      { name: "description", content: "Manage yachts, bookings, payments and finances." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -272,7 +272,7 @@ function OverviewTab() {
         icon={CalendarCheck}
       />
       <StatCard
-        label="Fleet"
+        label="Yachts"
         value={String(s.totalBoats)}
         hint={`${s.availableBoats} available`}
         icon={Ship}
@@ -319,7 +319,7 @@ function BoatsTab() {
         ? updateFn({ data: { ...payload, id: editing.id } as never })
         : createFn({ data: payload as never }),
     onSuccess: () => {
-      toast.success(editing ? "Boat updated." : "Boat added to the fleet.");
+      toast.success(editing ? "Boat updated." : "Boat added to the yacht listings.");
       setOpen(false);
       setEditing(null);
       setForm(emptyForm);
@@ -603,6 +603,7 @@ function BookingsTab() {
             <TableHead>Customer</TableHead>
             <TableHead>Boat</TableHead>
             <TableHead>Window</TableHead>
+            <TableHead>Snacks</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Deposit (20%)</TableHead>
             <TableHead>Paid</TableHead>
@@ -625,6 +626,9 @@ function BookingsTab() {
                 {formatDateTime(booking.start_date)}
                 <br />
                 {formatDateTime(booking.end_date)}
+              </TableCell>
+              <TableCell className="text-xs whitespace-nowrap">
+                {booking.snacks_option === "with_snacks" ? "With Snacks" : "Without Snacks"}
               </TableCell>
               <TableCell>{formatMoney(booking.total_price_cents)}</TableCell>
               <TableCell>{formatMoney(booking.deposit_cents)}</TableCell>

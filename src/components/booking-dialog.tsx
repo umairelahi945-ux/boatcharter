@@ -39,6 +39,14 @@ type Confirmation = {
   amountPaidCents: number;
   message: string;
   boatTitle: string;
+  snacksOption: SnacksOption;
+};
+
+type SnacksOption = "with_snacks" | "without_snacks";
+
+const SNACKS_LABEL: Record<SnacksOption, string> = {
+  with_snacks: "With Snacks",
+  without_snacks: "Without Snacks",
 };
 
 function toLocalInput(date: Date): string {
@@ -75,6 +83,7 @@ export function BookingDialog({
     defaults?.endISO ? toLocalInput(new Date(defaults.endISO)) : toLocalInput(end),
   );
   const [guests, setGuests] = useState(String(defaults?.guests ?? 2));
+  const [snacksOption, setSnacksOption] = useState<SnacksOption | "">("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -106,6 +115,7 @@ export function BookingDialog({
         amountPaidCents: result.amountPaidCents,
         message: result.message,
         boatTitle: result.boatTitle,
+        snacksOption: result.snacksOption,
       });
       if (result.paymentStatus === "paid")
         toast.success("Booking confirmed — 20% deposit captured.");
@@ -147,6 +157,7 @@ export function BookingDialog({
     if (new Date(startValue).getTime() < Date.now()) {
       next["start"] = "The start date must be in the future.";
     }
+    if (!snacksOption) next["snacks"] = "Please choose With Snacks or Without Snacks.";
     if (quote?.error) next["dates"] = quote.error;
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -170,6 +181,7 @@ export function BookingDialog({
         customerPhone: phone.trim(),
         guestCount: Number(guests),
         bookingType,
+        snacksOption: snacksOption as SnacksOption,
         startISO: new Date(startValue).toISOString(),
         endISO: new Date(endValue).toISOString(),
       },
@@ -227,6 +239,10 @@ export function BookingDialog({
                       {confirmation.paymentStatus}
                     </Badge>
                   </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Snacks</dt>
+                  <dd className="font-medium">{SNACKS_LABEL[confirmation.snacksOption]}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted-foreground">Booking status</dt>
@@ -366,25 +382,49 @@ export function BookingDialog({
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="start">Start</Label>
+                    <Label htmlFor="start">Start date &amp; time</Label>
                     <Input
                       id="start"
                       type="datetime-local"
+                      step={300}
                       value={startValue}
                       onChange={(event) => setStartValue(event.target.value)}
                     />
                     {errors["start"] ? <FieldError message={errors["start"]} /> : null}
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="end">End</Label>
+                    <Label htmlFor="end">End date &amp; time</Label>
                     <Input
                       id="end"
                       type="datetime-local"
+                      step={300}
                       value={endValue}
                       onChange={(event) => setEndValue(event.target.value)}
                     />
                   </div>
                 </div>
+                <p className="-mt-2 text-xs text-muted-foreground">
+                  Choose any start and end date and time you prefer — pricing updates from your
+                  selected duration.
+                </p>
+
+                <div className="space-y-1.5">
+                  <Label>Snacks</Label>
+                  <Select
+                    value={snacksOption}
+                    onValueChange={(value) => setSnacksOption(value as SnacksOption)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a snacks option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="with_snacks">With Snacks</SelectItem>
+                      <SelectItem value="without_snacks">Without Snacks</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors["snacks"] ? <FieldError message={errors["snacks"]} /> : null}
+                </div>
+
 
                 {quote?.error ? (
                   <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
@@ -395,6 +435,10 @@ export function BookingDialog({
                   <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm">
                     <Row label="Selected boat" value={boat.title} />
                     <Row label="Booking type" value={bookingType === "hourly" ? "Hourly" : "Daily"} />
+                    <Row
+                      label="Snacks"
+                      value={snacksOption ? SNACKS_LABEL[snacksOption] : "Not selected"}
+                    />
                     <Row
                       label="Duration"
                       value={`${quote?.duration ?? 0} ${quote?.unitLabel ?? ""}`}

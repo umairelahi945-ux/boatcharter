@@ -22,7 +22,7 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-2.5 text-sm text-white/60">
             <li>
               <Link to="/fleet" className="hover:text-primary">
-                Explore Fleet
+                Explore Yachts
               </Link>
             </li>
             <li>
