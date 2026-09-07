@@ -241,6 +241,10 @@ export function BookingDialog({
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Snacks</dt>
+                  <dd className="font-medium">{SNACKS_LABEL[confirmation.snacksOption]}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
                   <dt className="text-muted-foreground">Booking status</dt>
                   <dd className="font-medium capitalize">{confirmation.bookingStatus}</dd>
                 </div>
@@ -431,6 +435,10 @@ export function BookingDialog({
                   <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm">
                     <Row label="Selected boat" value={boat.title} />
                     <Row label="Booking type" value={bookingType === "hourly" ? "Hourly" : "Daily"} />
+                    <Row
+                      label="Snacks"
+                      value={snacksOption ? SNACKS_LABEL[snacksOption] : "Not selected"}
+                    />
                     <Row
                       label="Duration"
                       value={`${quote?.duration ?? 0} ${quote?.unitLabel ?? ""}`}
