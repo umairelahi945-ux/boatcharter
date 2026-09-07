@@ -378,25 +378,49 @@ export function BookingDialog({
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="start">Start</Label>
+                    <Label htmlFor="start">Start date &amp; time</Label>
                     <Input
                       id="start"
                       type="datetime-local"
+                      step={300}
                       value={startValue}
                       onChange={(event) => setStartValue(event.target.value)}
                     />
                     {errors["start"] ? <FieldError message={errors["start"]} /> : null}
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="end">End</Label>
+                    <Label htmlFor="end">End date &amp; time</Label>
                     <Input
                       id="end"
                       type="datetime-local"
+                      step={300}
                       value={endValue}
                       onChange={(event) => setEndValue(event.target.value)}
                     />
                   </div>
                 </div>
+                <p className="-mt-2 text-xs text-muted-foreground">
+                  Choose any start and end date and time you prefer — pricing updates from your
+                  selected duration.
+                </p>
+
+                <div className="space-y-1.5">
+                  <Label>Snacks</Label>
+                  <Select
+                    value={snacksOption}
+                    onValueChange={(value) => setSnacksOption(value as SnacksOption)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a snacks option" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="with_snacks">With Snacks</SelectItem>
+                      <SelectItem value="without_snacks">Without Snacks</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors["snacks"] ? <FieldError message={errors["snacks"]} /> : null}
+                </div>
+
 
                 {quote?.error ? (
                   <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
