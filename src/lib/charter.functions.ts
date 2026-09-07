@@ -334,5 +334,6 @@ export const requestBooking = createServerFn({ method: "POST" })
       message: charge.message,
       paymentMode: config.mode,
       boatTitle: boat.title,
+      snacksOption: data.snacksOption,
     };
   });
