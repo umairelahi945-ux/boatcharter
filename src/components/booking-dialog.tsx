@@ -39,6 +39,14 @@ type Confirmation = {
   amountPaidCents: number;
   message: string;
   boatTitle: string;
+  snacksOption: SnacksOption;
+};
+
+type SnacksOption = "with_snacks" | "without_snacks";
+
+const SNACKS_LABEL: Record<SnacksOption, string> = {
+  with_snacks: "With Snacks",
+  without_snacks: "Without Snacks",
 };
 
 function toLocalInput(date: Date): string {
@@ -75,6 +83,7 @@ export function BookingDialog({
     defaults?.endISO ? toLocalInput(new Date(defaults.endISO)) : toLocalInput(end),
   );
   const [guests, setGuests] = useState(String(defaults?.guests ?? 2));
+  const [snacksOption, setSnacksOption] = useState<SnacksOption | "">("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
