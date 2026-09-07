@@ -603,6 +603,7 @@ function BookingsTab() {
             <TableHead>Customer</TableHead>
             <TableHead>Boat</TableHead>
             <TableHead>Window</TableHead>
+            <TableHead>Snacks</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Deposit (20%)</TableHead>
             <TableHead>Paid</TableHead>
@@ -625,6 +626,9 @@ function BookingsTab() {
                 {formatDateTime(booking.start_date)}
                 <br />
                 {formatDateTime(booking.end_date)}
+              </TableCell>
+              <TableCell className="text-xs whitespace-nowrap">
+                {booking.snacks_option === "with_snacks" ? "With Snacks" : "Without Snacks"}
               </TableCell>
               <TableCell>{formatMoney(booking.total_price_cents)}</TableCell>
               <TableCell>{formatMoney(booking.deposit_cents)}</TableCell>
