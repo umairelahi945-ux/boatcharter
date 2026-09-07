@@ -110,7 +110,7 @@ export const adminListBoats = createServerFn({ method: "GET" })
       .select("*")
       .is("archived_at", null)
       .order("created_at", { ascending: false });
-    if (error) throw new Error("We could not load the fleet.");
+    if (error) throw new Error("We could not load the yachts.");
     return data ?? [];
   });
 
@@ -136,7 +136,7 @@ export const createBoat = createServerFn({ method: "POST" })
       console.error("[admin] create boat failed", error);
       return { ok: false as const, message: "We could not create this boat." };
     }
-    return { ok: true as const, message: "Boat added to the fleet." };
+    return { ok: true as const, message: "Boat added to the yacht listings." };
   });
 
 export const updateBoat = createServerFn({ method: "POST" })
@@ -198,7 +198,7 @@ export const deleteBoat = createServerFn({ method: "POST" })
       .update({ archived_at: new Date().toISOString(), is_available: false })
       .eq("id", data.id);
     if (error) return { ok: false as const, message: "We could not remove this boat." };
-    return { ok: true as const, message: "Boat removed from the fleet." };
+    return { ok: true as const, message: "Boat removed from the yacht listings." };
   });
 
 export const adminListBookings = createServerFn({ method: "GET" })

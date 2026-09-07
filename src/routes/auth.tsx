@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Sign in to the Boat Charter operations console to manage fleet, bookings and payments.",
+          "Sign in to the Boat Charter operations console to manage yachts, bookings and payments.",
       },
       { property: "og:title", content: "Administrator Sign In — Boat Charter" },
       { property: "og:description", content: "Access the Boat Charter operations console." },

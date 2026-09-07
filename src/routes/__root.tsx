@@ -90,7 +90,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Boat Charter — Luxury Yacht & Boat Rentals" },
       {
         property: "og:description",
-        content: "Hourly and daily charters across a curated fleet, booked online in minutes.",
+        content: "Hourly and daily charters across a curated yacht selection, booked online in minutes.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

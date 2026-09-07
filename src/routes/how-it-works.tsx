@@ -26,7 +26,7 @@ const STEPS = [
   {
     icon: Ship,
     title: "1. Choose your boat",
-    body: "Filter the fleet by category, home port and guest count. Each listing lists capacity, length and amenities.",
+    body: "Filter the yachts by category, home port and guest count. Each listing lists capacity, length and amenities.",
   },
   {
     icon: CalendarClock,

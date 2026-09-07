@@ -57,7 +57,7 @@ export const listBoats = createServerFn({ method: "GET" })
     const { data: boats, error } = await query;
     if (error) {
       console.error("[boats] list failed", error);
-      throw new Error("We could not load the fleet right now.");
+      throw new Error("We could not load the yachts right now.");
     }
 
     let results = boats ?? [];

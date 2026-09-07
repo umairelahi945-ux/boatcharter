@@ -54,7 +54,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Admin Dashboard — Boat Charter" },
-      { name: "description", content: "Manage fleet, bookings, payments and finances." },
+      { name: "description", content: "Manage yachts, bookings, payments and finances." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -272,7 +272,7 @@ function OverviewTab() {
         icon={CalendarCheck}
       />
       <StatCard
-        label="Fleet"
+        label="Yachts"
         value={String(s.totalBoats)}
         hint={`${s.availableBoats} available`}
         icon={Ship}
@@ -319,7 +319,7 @@ function BoatsTab() {
         ? updateFn({ data: { ...payload, id: editing.id } as never })
         : createFn({ data: payload as never }),
     onSuccess: () => {
-      toast.success(editing ? "Boat updated." : "Boat added to the fleet.");
+      toast.success(editing ? "Boat updated." : "Boat added to the yacht listings.");
       setOpen(false);
       setEditing(null);
       setForm(emptyForm);
