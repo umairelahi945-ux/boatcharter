@@ -28,18 +28,23 @@ export const Route = createFileRoute("/")({
 const HIGHLIGHTS = [
   {
     icon: ShieldCheck,
-    title: "Vetted fleet",
+    title: "Vetted yachts",
     body: "Every vessel is inspected, insured and captained by licensed crew.",
   },
   {
     icon: CreditCard,
-    title: "One secure payment",
-    body: "Card payments only, tokenised by our provider. No cash handovers.",
+    title: "Payment methods",
+    body: "We accept all payment methods such as bank transfers, ATM, credit cards, Visa and MasterCard. PayPal as well. Once the deposit is paid, the customers can pay the balance to the captain on the day of the charter.",
   },
   {
     icon: CalendarCheck,
     title: "Live availability",
     body: "Real-time conflict checks stop double bookings before they happen.",
+  },
+  {
+    icon: LifeBuoy,
+    title: "24/7 customer support",
+    body: "Our customer support staff is fully professional and experienced and are available around the clock for our valuable customers. You can reach us via chat, WhatsApp and email.",
   },
 ];
 
