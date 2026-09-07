@@ -68,13 +68,14 @@ function Home() {
             Charter the coast on <span className="text-gradient-sea">your own terms</span>
           </h1>
           <p className="mt-5 max-w-xl text-base text-white/75 md:text-lg">
-            Hourly and daily rentals across a curated fleet of yachts, catamarans and speedboats.
+            Hourly and daily rentals across a curated selection of yachts, catamarans and
+            speedboats.
             Pick your window, see the exact price, and confirm in minutes.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Button asChild size="lg">
               <Link to="/fleet">
-                <Anchor className="size-4" /> Explore the fleet
+                <Anchor className="size-4" /> Explore the yachts
               </Link>
             </Button>
             <Button asChild size="lg" variant="hero">
@@ -92,7 +93,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="container-page -mt-10 grid gap-4 sm:grid-cols-3">
+      <section className="container-page -mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {HIGHLIGHTS.map((item) => (
           <div
             key={item.title}
@@ -109,11 +110,15 @@ function Home() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold tracking-[0.2em] text-primary uppercase">
-              The fleet
+              Featured Yacht
             </p>
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Boats ready to sail</h2>
+            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">Yachts ready to sail</h2>
             <p className="mt-2 max-w-xl text-muted-foreground">
               Filter by category, guest count or home port, then price your charter instantly.
+            </p>
+            <p className="mt-2 max-w-xl text-sm font-medium text-foreground">
+              All the available charters are fully inspected and insured. Safety is our top
+              priority.
             </p>
           </div>
           <Button asChild variant="outline">
