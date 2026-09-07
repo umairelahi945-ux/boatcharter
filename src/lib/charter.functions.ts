@@ -15,6 +15,9 @@ const bookingInputSchema = z.object({
     .regex(/^[+]?[\d\s().-]{7,25}$/, "Please enter a valid phone number."),
   guestCount: z.number().int().min(1, "At least one guest is required.").max(100),
   bookingType: z.enum(["hourly", "daily"]),
+  snacksOption: z.enum(["with_snacks", "without_snacks"], {
+    message: "Please choose a snacks option.",
+  }),
   startISO: z.string().min(1, "Please choose a start date."),
   endISO: z.string().min(1, "Please choose an end date."),
   demoOutcome: z.enum(["success", "failure", "pending"]).optional(),
@@ -192,6 +195,7 @@ export const requestBooking = createServerFn({ method: "POST" })
         start_date: start.toISOString(),
         end_date: end.toISOString(),
         booking_type: data.bookingType,
+        snacks_option: data.snacksOption,
         duration: quote.duration,
         subtotal_cents: quote.subtotalCents,
         fees_cents: quote.feesCents,
