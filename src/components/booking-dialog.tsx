@@ -115,6 +115,7 @@ export function BookingDialog({
         amountPaidCents: result.amountPaidCents,
         message: result.message,
         boatTitle: result.boatTitle,
+        snacksOption: result.snacksOption,
       });
       if (result.paymentStatus === "paid")
         toast.success("Booking confirmed — 20% deposit captured.");
@@ -156,6 +157,7 @@ export function BookingDialog({
     if (new Date(startValue).getTime() < Date.now()) {
       next["start"] = "The start date must be in the future.";
     }
+    if (!snacksOption) next["snacks"] = "Please choose With Snacks or Without Snacks.";
     if (quote?.error) next["dates"] = quote.error;
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -179,6 +181,7 @@ export function BookingDialog({
         customerPhone: phone.trim(),
         guestCount: Number(guests),
         bookingType,
+        snacksOption: snacksOption as SnacksOption,
         startISO: new Date(startValue).toISOString(),
         endISO: new Date(endValue).toISOString(),
       },
