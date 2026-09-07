@@ -88,6 +88,7 @@ export type Database = {
           id: string
           payment_status: string
           reference: string
+          snacks_option: string
           start_date: string
           status: string
           subtotal_cents: number
@@ -113,6 +114,7 @@ export type Database = {
           id?: string
           payment_status?: string
           reference: string
+          snacks_option?: string
           start_date: string
           status?: string
           subtotal_cents?: number
@@ -138,6 +140,7 @@ export type Database = {
           id?: string
           payment_status?: string
           reference?: string
+          snacks_option?: string
           start_date?: string
           status?: string
           subtotal_cents?: number
