@@ -11,6 +11,8 @@ const ADMIN_EMAILS = new Set([
   "hibasaratechservices@gmail.com",
   "umairelahi945@gmail.com",
   "umairlelahi945@gmail.com",
+  "ibrar@horizonboatcharters.com",
+  "sam@horizonboatcharters.com",
 ]);
 
 export function isAdminEmail(email: unknown): boolean {
