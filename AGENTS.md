@@ -1,10 +1,5 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Engineering notes
+
+- Server logic uses TanStack Start server functions; external callers (payment webhooks) use routes under `src/routes/api/public/`, which verify the caller themselves — they bypass auth.
+- Admin access is enforced server-side by an email allowlist in `src/lib/admin-guard.server.ts` mirrored by the `is_authorized_admin()` database function — keep both in sync.
+- Money is stored as integer cents and the deposit split lives in `src/lib/money.ts` — one source of truth for pricing.
