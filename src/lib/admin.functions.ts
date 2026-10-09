@@ -443,3 +443,11 @@ export const adminListFinancialHistory = createServerFn({ method: "GET" })
     if (error) throw new Error("We could not load financial history.");
     return data ?? [];
   });
+
+/** Lets the sign-in page refuse password setup for emails not on the admin allowlist. */
+export const checkAdminEmailEligible = createServerFn({ method: "POST" })
+  .inputValidator((data: { email: string }) => z.object({ email: z.string().trim().email().max(255) }).parse(data))
+  .handler(async ({ data }) => {
+    const { isAdminEmail } = await import("./admin-guard.server");
+    return { eligible: isAdminEmail(data.email) };
+  });
