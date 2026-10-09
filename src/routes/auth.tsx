@@ -219,7 +219,8 @@ function AuthPage() {
           ) : null}
 
           <Button type="submit" size="lg" className="w-full" disabled={loading || googleLoading}>
-            {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
+            {loading ? <Loader2 className="size-4 animate-spin" /> : null}{" "}
+            {mode === "setup" ? "Create admin password" : "Sign in"}
           </Button>
         </form>
 
