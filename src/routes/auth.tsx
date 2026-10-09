@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
+import { checkAdminEmailEligible } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -73,6 +74,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<"signin" | "setup">("signin");
 
   // If a session already exists (e.g. returning from Google OAuth), go to /admin.
   useEffect(() => {
@@ -122,6 +124,34 @@ function AuthPage() {
     setError(null);
     setLoading(true);
     try {
+      if (mode === "setup") {
+        const { eligible } = await checkAdminEmailEligible({ data: { email: email.trim() } });
+        if (!eligible) {
+          const msg = "This email is not authorized for administrator access.";
+          setError(msg);
+          toast.error(msg);
+          return;
+        }
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/auth` },
+        });
+        if (signUpError) {
+          const friendly = describeError(signUpError.message);
+          setError(friendly);
+          toast.error(friendly);
+          return;
+        }
+        if (!signUpData.session) {
+          toast.success("Check your inbox to confirm your email, then sign in.");
+          setMode("signin");
+          return;
+        }
+        await router.invalidate();
+        navigate({ to: "/admin", replace: true });
+        return;
+      }
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
@@ -189,7 +219,8 @@ function AuthPage() {
           ) : null}
 
           <Button type="submit" size="lg" className="w-full" disabled={loading || googleLoading}>
-            {loading ? <Loader2 className="size-4 animate-spin" /> : null} Sign in
+            {loading ? <Loader2 className="size-4 animate-spin" /> : null}{" "}
+            {mode === "setup" ? "Create admin password" : "Sign in"}
           </Button>
         </form>
 
@@ -212,8 +243,17 @@ function AuthPage() {
         </Button>
 
         <p className="mt-5 text-center text-xs text-muted-foreground">
-          Accounts are provisioned by the operator. New administrator accounts cannot be created
-          here.
+          {mode === "signin" ? "Authorized administrator without a password? " : "Already set a password? "}
+          <button
+            type="button"
+            className="text-primary underline-offset-4 hover:underline"
+            onClick={() => {
+              setError(null);
+              setMode(mode === "signin" ? "setup" : "signin");
+            }}
+          >
+            {mode === "signin" ? "Set up your account" : "Sign in"}
+          </button>
         </p>
       </div>
     </div>
