@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -19,57 +19,82 @@ export type Database = {
           amenities: string[]
           archived_at: string | null
           capacity: number
+          captain_name: string
           category: string
+          company_name: string
+          contact_email: string
+          contact_phone: string
           created_at: string
           daily_rate_cents: number
           description: string
+          extra_passenger_charge_cents: number
           hourly_rate_cents: number
           id: string
           image_urls: string[]
           is_available: boolean
           length_ft: number
           location: string
+          min_booking_hours: number
           title: string
           updated_at: string
+          with_snacks_price_cents: number
+          without_snacks_price_cents: number
         }
         Insert: {
           amenities?: string[]
           archived_at?: string | null
           capacity?: number
+          captain_name?: string
           category: string
+          company_name?: string
+          contact_email?: string
+          contact_phone?: string
           created_at?: string
           daily_rate_cents?: number
           description?: string
+          extra_passenger_charge_cents?: number
           hourly_rate_cents?: number
           id?: string
           image_urls?: string[]
           is_available?: boolean
           length_ft?: number
           location?: string
+          min_booking_hours?: number
           title: string
           updated_at?: string
+          with_snacks_price_cents?: number
+          without_snacks_price_cents?: number
         }
         Update: {
           amenities?: string[]
           archived_at?: string | null
           capacity?: number
+          captain_name?: string
           category?: string
+          company_name?: string
+          contact_email?: string
+          contact_phone?: string
           created_at?: string
           daily_rate_cents?: number
           description?: string
+          extra_passenger_charge_cents?: number
           hourly_rate_cents?: number
           id?: string
           image_urls?: string[]
           is_available?: boolean
           length_ft?: number
           location?: string
+          min_booking_hours?: number
           title?: string
           updated_at?: string
+          with_snacks_price_cents?: number
+          without_snacks_price_cents?: number
         }
         Relationships: []
       }
       bookings: {
         Row: {
+          additional_passengers: number
           amount_paid_cents: number
           balance_due_cents: number
           boat_id: string | null
@@ -96,6 +121,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          additional_passengers?: number
           amount_paid_cents?: number
           balance_due_cents?: number
           boat_id?: string | null
@@ -122,6 +148,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          additional_passengers?: number
           amount_paid_cents?: number
           balance_due_cents?: number
           boat_id?: string | null
@@ -156,6 +183,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      destinations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          season_end: string
+          season_start: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          season_end?: string
+          season_start?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          season_end?: string
+          season_start?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       financial_history: {
         Row: {
@@ -329,6 +389,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      site_settings: {
+        Row: {
+          cancellation_policy: string
+          id: number
+          map_embed_url: string
+          map_location: string
+          updated_at: string
+        }
+        Insert: {
+          cancellation_policy?: string
+          id?: number
+          map_embed_url?: string
+          map_location?: string
+          updated_at?: string
+        }
+        Update: {
+          cancellation_policy?: string
+          id?: number
+          map_embed_url?: string
+          map_location?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
