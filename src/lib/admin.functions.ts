@@ -15,7 +15,28 @@ const boatSchema = z.object({
   amenities: z.array(z.string().trim().max(60)).max(30).default([]),
   imageUrls: z.array(z.string().trim().url("Image links must be valid URLs.")).max(12).default([]),
   isAvailable: z.boolean().default(true),
+  extraPassengerChargeCents: z.number().int().min(0).max(100_000_000).default(0),
+  withSnacksPriceCents: z.number().int().min(0).max(100_000_000).default(0),
+  withoutSnacksPriceCents: z.number().int().min(0).max(100_000_000).default(0),
+  minBookingHours: z.number().int().min(1).max(240).default(2),
+  captainName: z.string().trim().max(120).default(""),
+  companyName: z.string().trim().max(160).default(""),
+  contactEmail: z.union([z.literal(""), z.string().trim().email("Enter a valid email.").max(255)]).default(""),
+  contactPhone: z.string().trim().max(40).regex(/^[+0-9()\-\s.]*$/, "Enter a valid contact number.").default(""),
 });
+
+function boatColumns(data: z.output<typeof boatSchema>) {
+  return {
+    extra_passenger_charge_cents: data.extraPassengerChargeCents,
+    with_snacks_price_cents: data.withSnacksPriceCents,
+    without_snacks_price_cents: data.withoutSnacksPriceCents,
+    min_booking_hours: data.minBookingHours,
+    captain_name: data.captainName,
+    company_name: data.companyName,
+    contact_email: data.contactEmail,
+    contact_phone: data.contactPhone,
+  };
+}
 
 export type BoatFormInput = z.input<typeof boatSchema>;
 
@@ -131,6 +152,7 @@ export const createBoat = createServerFn({ method: "POST" })
       amenities: data.amenities,
       image_urls: data.imageUrls,
       is_available: data.isAvailable,
+      ...boatColumns(data),
     });
     if (error) {
       console.error("[admin] create boat failed", error);
@@ -160,6 +182,7 @@ export const updateBoat = createServerFn({ method: "POST" })
         amenities: data.amenities,
         image_urls: data.imageUrls,
         is_available: data.isAvailable,
+        ...boatColumns(data),
       })
       .eq("id", data.id);
     if (error) {
@@ -205,18 +228,40 @@ export const adminListBookings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const supabase = await adminClient(context);
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const [{ data, error }, boats, payments] = await Promise.all([
+      supabase.from("bookings").select("*").order("created_at", { ascending: false }),
+      supabase.from("boats").select("id, category, captain_name, company_name"),
+      supabase.from("payments").select("booking_id, amount_cents, payment_status"),
+    ]);
     if (error) throw new Error("We could not load bookings.");
-    return data ?? [];
+    const boatMap = new Map((boats.data ?? []).map((b) => [b.id, b]));
+    const paidByBooking = new Map<string, number>();
+    for (const p of payments.data ?? []) {
+      if (!p.booking_id || p.payment_status !== "paid") continue;
+      paidByBooking.set(p.booking_id, (paidByBooking.get(p.booking_id) ?? 0) + Number(p.amount_cents));
+    }
+    return (data ?? []).map((b) => {
+      const boat = b.boat_id ? boatMap.get(b.boat_id) : undefined;
+      // Each paid payment row is counted once; fall back to the booking's recorded amount.
+      const paid = paidByBooking.has(b.id) ? paidByBooking.get(b.id)! : Number(b.amount_paid_cents);
+      return {
+        ...b,
+        boat_category: boat?.category ?? "",
+        captain_name: boat?.captain_name ?? "",
+        company_name: boat?.company_name ?? "",
+        paid_to_date_cents: paid,
+        remaining_balance_cents: Math.max(0, Number(b.total_price_cents) - paid),
+      };
+    });
   });
+
+export const BOOKING_STATUSES = ["pending", "confirmed", "completed", "cancelled"] as const;
+export type BookingStatus = (typeof BOOKING_STATUSES)[number];
 
 export const updateBookingStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { id: string; status: "confirmed" | "cancelled" }) =>
-    z.object({ id: z.string().uuid(), status: z.enum(["confirmed", "cancelled"]) }).parse(data),
+  .inputValidator((data: { id: string; status: BookingStatus }) =>
+    z.object({ id: z.string().uuid(), status: z.enum(BOOKING_STATUSES) }).parse(data),
   )
   .handler(async ({ data, context }) => {
     const supabase = await adminClient(context);
@@ -253,8 +298,8 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     }
 
     await addHistory({
-      event: data.status === "confirmed" ? "Booking confirmed" : "Booking cancelled",
-      eventType: data.status === "confirmed" ? "booking_confirmed" : "booking_cancelled",
+      event: `Booking ${data.status}`,
+      eventType: `booking_${data.status}`,
       bookingId: booking.id,
       bookingReference: booking.reference,
       boatId: booking.boat_id,
@@ -267,7 +312,7 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
 
     return {
       ok: true as const,
-      message: data.status === "confirmed" ? "Booking approved." : "Booking cancelled.",
+      message: `Booking status set to ${data.status}.`,
     };
   });
 
@@ -450,4 +495,99 @@ export const checkAdminEmailEligible = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { isAdminEmail } = await import("./admin-guard.server");
     return { eligible: isAdminEmail(data.email) };
+  });
+
+const settingsSchema = z.object({
+  cancellationPolicy: z.string().trim().max(10000),
+  mapLocation: z.string().trim().max(300),
+  mapEmbedUrl: z
+    .string()
+    .trim()
+    .max(2000)
+    .refine((v) => v === "" || isSafeMapUrl(v), "Use a Google Maps embed link (https://www.google.com/maps/embed?...)."),
+});
+
+function isSafeMapUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      ["www.google.com", "maps.google.com"].includes(url.hostname) &&
+      url.pathname.startsWith("/maps")
+    );
+  } catch {
+    return false;
+  }
+}
+
+export const adminGetSettings = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = await adminClient(context);
+    const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+    return {
+      cancellationPolicy: data?.cancellation_policy ?? "",
+      mapLocation: data?.map_location ?? "",
+      mapEmbedUrl: data?.map_embed_url ?? "",
+    };
+  });
+
+export const adminUpdateSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: z.input<typeof settingsSchema>) => settingsSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const supabase = await adminClient(context);
+    const { error } = await supabase.from("site_settings").upsert({
+      id: 1,
+      cancellation_policy: data.cancellationPolicy,
+      map_location: data.mapLocation,
+      map_embed_url: data.mapEmbedUrl,
+    });
+    if (error) return { ok: false as const, message: "We could not save these settings." };
+    return { ok: true as const, message: "Settings saved." };
+  });
+
+const destinationSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(2, "Name is required.").max(160),
+  seasonStart: z.string().trim().max(60),
+  seasonEnd: z.string().trim().max(60),
+  sortOrder: z.number().int().min(0).max(10000).default(0),
+  isActive: z.boolean().default(true),
+});
+
+export const adminListDestinations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = await adminClient(context);
+    const { data, error } = await supabase
+      .from("destinations")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) throw new Error("We could not load destinations.");
+    return data ?? [];
+  });
+
+export const adminSaveDestination = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: z.input<typeof destinationSchema>) => destinationSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const supabase = await adminClient(context);
+    const row = {
+      name: data.name,
+      season_start: data.seasonStart,
+      season_end: data.seasonEnd,
+      sort_order: data.sortOrder,
+      is_active: data.isActive,
+    };
+    const { error } = data.id
+      ? await supabase.from("destinations").update(row).eq("id", data.id)
+      : await supabase.from("destinations").insert(row);
+    if (error) {
+      return {
+        ok: false as const,
+        message: error.code === "23505" ? "A destination with this name already exists." : "We could not save this destination.",
+      };
+    }
+    return { ok: true as const, message: "Destination saved." };
   });
