@@ -15,6 +15,13 @@
       "when": 1791574137352,
       "tag": "0001_add_contact_admin_email",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791884776694,
+      "tag": "0002_admin_enhancements",
+      "breakpoints": true
     }
   ]
 }
