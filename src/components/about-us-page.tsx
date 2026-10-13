@@ -43,8 +43,8 @@ const adventureImage =
   "https://images.unsplash.com/photo-1648726438777-de835df96657?auto=format&fit=crop&crop=entropy&fm=jpg&q=80&w=900";
 
 export function AboutUsPage() {
-  const destinations = NAVIGATION_SECTIONS.destinations.categories;
-  const experiences = NAVIGATION_SECTIONS.experiences.categories;
+  const destinations = NAVIGATION_SECTIONS["destinations"]?.categories ?? [];
+  const experiences = NAVIGATION_SECTIONS["experiences"]?.categories ?? [];
 
   return (
     <main className="container-page py-12 sm:py-16">
@@ -68,7 +68,7 @@ export function AboutUsPage() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link to="/$section/" params={{ section: "destinations" }}>
+              <Link to="/$section" params={{ section: "destinations" }}>
                 <Compass /> Explore destinations
               </Link>
             </Button>
@@ -235,7 +235,7 @@ export function AboutUsPage() {
               size="lg"
               className="w-full border-0 bg-[#D19413] text-white hover:bg-[#C68D15] sm:w-auto"
             >
-              <Link to="/$section/" params={{ section: "destinations" }}>
+              <Link to="/$section" params={{ section: "destinations" }}>
                 <Compass /> Explore destinations
               </Link>
             </Button>

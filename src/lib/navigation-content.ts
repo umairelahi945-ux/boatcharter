@@ -148,7 +148,7 @@ export const NAVIGATION_SECTIONS: Record<string, NavigationSection> = Object.fro
     {
       label: "Destinations",
       title: "Boat Charter Destinations",
-      description: sectionDescriptions.destinations,
+      description: sectionDescriptions["destinations"],
       categories: destinations,
     },
   ],
@@ -166,7 +166,7 @@ export const NAVIGATION_SECTIONS: Record<string, NavigationSection> = Object.fro
     {
       label: "About Us",
       title: "About Horizon Boat Charters",
-      description: sectionDescriptions.about,
+      description: sectionDescriptions["about"],
       seoTitle: "About Horizon Boat Charters | Boats, Yachts & Destinations",
       categories: [],
     },

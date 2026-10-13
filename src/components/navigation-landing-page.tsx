@@ -26,7 +26,8 @@ export function NavigationLandingPage({ sectionSlug }: { sectionSlug: string }) 
             {section.categories.map((category) => (
               <li key={category.slug} data-scroll-reveal-card>
                 <Link
-                  to={`/${sectionSlug}/${category.slug}` as never}
+                  to="/$section/$category"
+                  params={{ section: sectionSlug, category: category.slug }}
                   className="group block h-full rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <h2 className="text-lg font-semibold group-hover:text-primary">
@@ -113,8 +114,10 @@ export function NavigationCategoryPage({
               key={category.slug}
               destination={{
                 label: category.label,
-                locations: category.inventoryLocations,
-                locationIncludes: category.inventoryLocationIncludes,
+                ...(category.inventoryLocations ? { locations: category.inventoryLocations } : {}),
+                ...(category.inventoryLocationIncludes
+                  ? { locationIncludes: category.inventoryLocationIncludes }
+                  : {}),
               }}
               contactOnEmpty
             />
@@ -135,7 +138,7 @@ export function NavigationCategoryPage({
           </li>
           <li aria-hidden="true">/</li>
           <li>
-            <Link to={`/${sectionSlug}/` as never} className="hover:text-foreground">
+            <Link to="/$section" params={{ section: sectionSlug }} className="hover:text-foreground">
               {section.label}
             </Link>
           </li>
@@ -164,7 +167,7 @@ export function NavigationCategoryPage({
           availability. Select a vessel to open the booking calculator and choose your dates.
         </p>
         <Button asChild variant="outline" className="mt-6">
-          <Link to={`/${sectionSlug}/` as never}>Explore more {section.label.toLowerCase()}</Link>
+          <Link to="/$section" params={{ section: sectionSlug }}>Explore more {section.label.toLowerCase()}</Link>
         </Button>
       </section>
     </main>

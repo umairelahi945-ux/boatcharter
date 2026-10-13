@@ -1095,7 +1095,10 @@ function TermsTab() {
   const save = useMutation({
     mutationFn: saveFn,
     onSuccess: (result) => {
-      if (!result.ok) return toast.error(result.message);
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
       toast.success(result.message);
       setDraft(null);
       queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
@@ -1104,7 +1107,9 @@ function TermsTab() {
   });
   if (query.isPending) return <PanelLoading />;
   if (query.isError) return <PanelError onRetry={() => query.refetch()} />;
-  const form = draft ?? query.data;
+  const settings = query.data;
+  if (!settings) return <PanelLoading />;
+  const form = draft ?? settings;
   return (
     <Card className="space-y-5 p-6">
       <Field label="Cancellation and refund policy">
@@ -1154,7 +1159,10 @@ function DestinationsTab() {
   const save = useMutation({
     mutationFn: saveFn,
     onSuccess: (result) => {
-      if (!result.ok) return toast.error(result.message);
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
       toast.success(result.message);
       setEditing(null);
       queryClient.invalidateQueries({ queryKey: ["admin-destinations"] });
@@ -1163,7 +1171,8 @@ function DestinationsTab() {
   });
   if (query.isPending) return <PanelLoading />;
   if (query.isError) return <PanelError onRetry={() => query.refetch()} />;
-  const rows = query.data as DestinationRow[];
+  const rows = query.data;
+  if (!rows) return <PanelLoading />;
   const submit = (row: DestinationRow) =>
     save.mutate({
       data: {

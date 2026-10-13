@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, Menu, X } from "lucide-react";
-import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 
 import horizonLogo from "@/assets/horizon-boat-charters-logo.png";
@@ -35,7 +35,7 @@ export function SiteHeader() {
     body.style.overflow = "hidden";
     closeButtonRef.current?.focus();
 
-    const onKeyDown = (event: KeyboardEvent) => {
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         setOpen(false);
@@ -125,7 +125,8 @@ export function SiteHeader() {
             </li>
             <li>
               <Link
-                to="/about/"
+                to="/$section"
+                params={{ section: "about" }}
                 className={navLinkClass}
                 activeProps={{ className: "text-primary" }}
               >
@@ -221,7 +222,7 @@ export function SiteHeader() {
                       </MobileLink>
                     </li>
                     <li>
-                      <MobileLink to="/about/" onClick={closeDrawer}>
+                      <MobileLink to="/about" onClick={closeDrawer}>
                         About Us
                       </MobileLink>
                     </li>
@@ -252,6 +253,7 @@ export function SiteHeader() {
 
 function DesktopDropdown({ sectionSlug }: { sectionSlug: (typeof MENU_SECTIONS)[number] }) {
   const section = NAVIGATION_SECTIONS[sectionSlug];
+  if (!section) return null;
   const [expanded, setExpanded] = useState(false);
   const groupRef = useRef<HTMLDivElement>(null);
   const menuId = `desktop-${sectionSlug}-submenu`;
@@ -260,7 +262,7 @@ function DesktopDropdown({ sectionSlug }: { sectionSlug: (typeof MENU_SECTIONS)[
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setExpanded(false);
   }
 
-  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+  function onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
       setExpanded(false);
       groupRef.current?.querySelector("button")?.focus();
@@ -282,7 +284,7 @@ function DesktopDropdown({ sectionSlug }: { sectionSlug: (typeof MENU_SECTIONS)[
       onKeyDown={onKeyDown}
     >
       <Link
-        to={`/${sectionSlug}/` as never}
+        to={`/${sectionSlug}` as never}
         className={navLinkClass}
         activeProps={{ className: "text-primary" }}
         onClick={() => setExpanded(false)}
@@ -330,6 +332,7 @@ function MobileDisclosure({
   onNavigate: () => void;
 }) {
   const section = NAVIGATION_SECTIONS[sectionSlug];
+  if (!section) return null;
   return (
     <li>
       <details className="group rounded-lg">
@@ -339,7 +342,7 @@ function MobileDisclosure({
         </summary>
         <ul className="pb-2 pl-3">
           <li>
-            <MobileLink to={`/${sectionSlug}/` as never} onClick={onNavigate}>
+            <MobileLink to={`/${sectionSlug}` as never} onClick={onNavigate}>
               Explore {section.label}
             </MobileLink>
           </li>
