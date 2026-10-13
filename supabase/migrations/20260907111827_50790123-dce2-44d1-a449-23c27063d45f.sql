@@ -1,0 +1,2 @@
+ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS snacks_option text NOT NULL DEFAULT 'without_snacks';
+ALTER TABLE public.bookings ADD CONSTRAINT bookings_snacks_option_check CHECK (snacks_option IN ('with_snacks','without_snacks'));

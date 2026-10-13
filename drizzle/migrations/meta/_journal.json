@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790789561500,
+      "tag": "0000_add_admin_emails_horizon",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791574137352,
+      "tag": "0001_add_contact_admin_email",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791884776694,
+      "tag": "0002_admin_enhancements",
+      "breakpoints": true
+    }
+  ]
+}
