@@ -37,6 +37,11 @@ import {
   adminListFinancialHistory,
   adminListFinancialRecords,
   adminListPayments,
+  adminGetSettings,
+  adminUpdateSettings,
+  adminListDestinations,
+  adminSaveDestination,
+  BOOKING_STATUSES,
   createAdjustment,
   createBoat,
   deleteBoat,
@@ -74,6 +79,14 @@ type BoatRow = {
   amenities: string[];
   image_urls: string[];
   is_available: boolean;
+  extra_passenger_charge_cents: number;
+  with_snacks_price_cents: number;
+  without_snacks_price_cents: number;
+  min_booking_hours: number;
+  captain_name: string;
+  company_name: string;
+  contact_email: string;
+  contact_phone: string;
 };
 
 const emptyForm = {
@@ -88,6 +101,14 @@ const emptyForm = {
   amenities: "",
   imageUrls: "",
   isAvailable: true,
+  extraPassengerCharge: "0",
+  withSnacksPrice: "0",
+  withoutSnacksPrice: "0",
+  minBookingHours: "2",
+  captainName: "",
+  companyName: "",
+  contactEmail: "",
+  contactPhone: "",
 };
 
 function AdminPage() {
@@ -177,6 +198,8 @@ function AdminPage() {
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="finance">Finance</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="terms">Terms &amp; Location</TabsTrigger>
+          <TabsTrigger value="destinations">Destinations</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -196,6 +219,12 @@ function AdminPage() {
         </TabsContent>
         <TabsContent value="history" className="mt-6">
           <HistoryTab />
+        </TabsContent>
+        <TabsContent value="terms" className="mt-6">
+          <TermsTab />
+        </TabsContent>
+        <TabsContent value="destinations" className="mt-6">
+          <DestinationsTab />
         </TabsContent>
       </Tabs>
     </div>
@@ -363,6 +392,14 @@ function BoatsTab() {
       amenities: (boat.amenities ?? []).join(", "),
       imageUrls: (boat.image_urls ?? []).join("\n"),
       isAvailable: boat.is_available,
+      extraPassengerCharge: String((boat.extra_passenger_charge_cents ?? 0) / 100),
+      withSnacksPrice: String((boat.with_snacks_price_cents ?? 0) / 100),
+      withoutSnacksPrice: String((boat.without_snacks_price_cents ?? 0) / 100),
+      minBookingHours: String(boat.min_booking_hours ?? 2),
+      captainName: boat.captain_name ?? "",
+      companyName: boat.company_name ?? "",
+      contactEmail: boat.contact_email ?? "",
+      contactPhone: boat.contact_phone ?? "",
     });
     setOpen(true);
   }
@@ -370,6 +407,19 @@ function BoatsTab() {
   function submit() {
     if (form.title.trim().length < 2 || form.location.trim().length < 2) {
       toast.error("Title and location are required.");
+      return;
+    }
+    const money = [form.hourlyRate, form.dailyRate, form.extraPassengerCharge, form.withSnacksPrice, form.withoutSnacksPrice];
+    if (money.some((v) => !Number.isFinite(Number(v)) || Number(v) < 0)) {
+      toast.error("Prices must be zero or more.");
+      return;
+    }
+    if (!Number.isInteger(Number(form.minBookingHours)) || Number(form.minBookingHours) < 1) {
+      toast.error("Minimum booking hours must be a whole number of at least 1.");
+      return;
+    }
+    if (form.contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.contactEmail.trim())) {
+      toast.error("Please enter a valid email.");
       return;
     }
     save.mutate({
@@ -390,6 +440,14 @@ function BoatsTab() {
         .map((value) => value.trim())
         .filter(Boolean),
       isAvailable: form.isAvailable,
+      extraPassengerChargeCents: Math.round(Number(form.extraPassengerCharge) * 100),
+      withSnacksPriceCents: Math.round(Number(form.withSnacksPrice) * 100),
+      withoutSnacksPriceCents: Math.round(Number(form.withoutSnacksPrice) * 100),
+      minBookingHours: Number(form.minBookingHours),
+      captainName: form.captainName.trim(),
+      companyName: form.companyName.trim(),
+      contactEmail: form.contactEmail.trim(),
+      contactPhone: form.contactPhone.trim(),
     });
   }
 
@@ -411,7 +469,8 @@ function BoatsTab() {
             <TableRow>
               <TableHead>Boat</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Capacity</TableHead>
+              <TableHead>Passengers</TableHead>
+              <TableHead>Captain / Company</TableHead>
               <TableHead>Hourly</TableHead>
               <TableHead>Daily</TableHead>
               <TableHead>Available</TableHead>
@@ -427,6 +486,10 @@ function BoatsTab() {
                 </TableCell>
                 <TableCell>{boat.category}</TableCell>
                 <TableCell>{boat.capacity}</TableCell>
+                <TableCell className="text-xs">
+                  <p>{boat.captain_name || "—"}</p>
+                  <p className="text-muted-foreground">{boat.company_name}</p>
+                </TableCell>
                 <TableCell>{formatMoney(boat.hourly_rate_cents)}</TableCell>
                 <TableCell>{formatMoney(boat.daily_rate_cents)}</TableCell>
                 <TableCell>
@@ -453,7 +516,7 @@ function BoatsTab() {
             ))}
             {boats.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
                   No boats yet.
                 </TableCell>
               </TableRow>
@@ -466,7 +529,7 @@ function BoatsTab() {
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogTitle>{editing ? "Edit boat" : "Add boat"}</DialogTitle>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label="Title">
+            <Field label="Boat title">
               <Input
                 value={form.title}
                 onChange={(event) => setForm({ ...form, title: event.target.value })}
@@ -489,7 +552,7 @@ function BoatsTab() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Capacity (guests)">
+            <Field label="Number of passengers">
               <Input
                 type="number"
                 min={1}
@@ -505,7 +568,7 @@ function BoatsTab() {
                 onChange={(event) => setForm({ ...form, lengthFt: event.target.value })}
               />
             </Field>
-            <Field label="Hourly rate (USD)">
+            <Field label="Per-hour charges (USD)">
               <Input
                 type="number"
                 min={0}
@@ -521,6 +584,70 @@ function BoatsTab() {
                 step="0.01"
                 value={form.dailyRate}
                 onChange={(event) => setForm({ ...form, dailyRate: event.target.value })}
+              />
+            </Field>
+            <Field label="Additional passenger charge per person (USD)">
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.extraPassengerCharge}
+                onChange={(event) => setForm({ ...form, extraPassengerCharge: event.target.value })}
+              />
+            </Field>
+            <Field label="Booking with snacks (USD)">
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.withSnacksPrice}
+                onChange={(event) => setForm({ ...form, withSnacksPrice: event.target.value })}
+              />
+            </Field>
+            <Field label="Booking without snacks (USD)">
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.withoutSnacksPrice}
+                onChange={(event) => setForm({ ...form, withoutSnacksPrice: event.target.value })}
+              />
+            </Field>
+            <Field label="Minimum booking hours">
+              <Input
+                type="number"
+                min={0}
+                step="1"
+                value={form.minBookingHours}
+                onChange={(event) => setForm({ ...form, minBookingHours: event.target.value })}
+              />
+            </Field>
+            <Field label="Captain name">
+              <Input
+                type="text"
+                value={form.captainName}
+                onChange={(event) => setForm({ ...form, captainName: event.target.value })}
+              />
+            </Field>
+            <Field label="Company name">
+              <Input
+                type="text"
+                value={form.companyName}
+                onChange={(event) => setForm({ ...form, companyName: event.target.value })}
+              />
+            </Field>
+            <Field label="Email">
+              <Input
+                type="email"
+                value={form.contactEmail}
+                onChange={(event) => setForm({ ...form, contactEmail: event.target.value })}
+              />
+            </Field>
+            <Field label="Contact number">
+              <Input
+                type="tel"
+                value={form.contactPhone}
+                onChange={(event) => setForm({ ...form, contactPhone: event.target.value })}
               />
             </Field>
             <Field label="Location" className="sm:col-span-2">
@@ -599,18 +726,20 @@ function BookingsTab() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Reference</TableHead>
+            <TableHead>Inquiry #</TableHead>
             <TableHead>Customer</TableHead>
+            <TableHead>Contact</TableHead>
             <TableHead>Boat</TableHead>
+            <TableHead>Captain / Company</TableHead>
+            <TableHead>Passengers</TableHead>
             <TableHead>Window</TableHead>
             <TableHead>Snacks</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Deposit (20%)</TableHead>
             <TableHead>Paid</TableHead>
-            <TableHead>Balance</TableHead>
+            <TableHead>Remaining balance</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -619,9 +748,23 @@ function BookingsTab() {
               <TableCell className="font-mono text-xs">{booking.reference}</TableCell>
               <TableCell>
                 <p className="font-medium">{booking.customer_name}</p>
-                <p className="text-xs text-muted-foreground">{booking.customer_email}</p>
               </TableCell>
-              <TableCell>{booking.boat_title}</TableCell>
+              <TableCell className="text-xs">
+                <p>{booking.customer_email}</p>
+                <p className="text-muted-foreground">{booking.customer_phone}</p>
+              </TableCell>
+              <TableCell>
+                <p>{booking.boat_title}</p>
+                <p className="text-xs text-muted-foreground">{booking.boat_category}</p>
+              </TableCell>
+              <TableCell className="text-xs">
+                <p>{booking.captain_name || "—"}</p>
+                <p className="text-muted-foreground">{booking.company_name}</p>
+              </TableCell>
+              <TableCell className="text-xs whitespace-nowrap">
+                {booking.guest_count}
+                {booking.additional_passengers > 0 ? ` (+${booking.additional_passengers} extra)` : ""}
+              </TableCell>
               <TableCell className="text-xs">
                 {formatDateTime(booking.start_date)}
                 <br />
@@ -632,39 +775,38 @@ function BookingsTab() {
               </TableCell>
               <TableCell>{formatMoney(booking.total_price_cents)}</TableCell>
               <TableCell>{formatMoney(booking.deposit_cents)}</TableCell>
-              <TableCell>{formatMoney(booking.amount_paid_cents)}</TableCell>
+              <TableCell>{formatMoney(booking.paid_to_date_cents)}</TableCell>
               <TableCell className="font-medium">
-                {formatMoney(booking.balance_due_cents)}
+                {formatMoney(booking.remaining_balance_cents)}
               </TableCell>
               <TableCell>
                 <StatusBadge status={booking.payment_status} />
               </TableCell>
               <TableCell>
-                <StatusBadge status={booking.status} />
-              </TableCell>
-              <TableCell className="space-x-2 text-right whitespace-nowrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={booking.status === "confirmed" || mutate.isPending}
-                  onClick={() => mutate.mutate({ data: { id: booking.id, status: "confirmed" } })}
+                <Select
+                  value={booking.status}
+                  disabled={mutate.isPending}
+                  onValueChange={(value) =>
+                    mutate.mutate({ data: { id: booking.id, status: value as (typeof BOOKING_STATUSES)[number] } })
+                  }
                 >
-                  Approve
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={booking.status === "cancelled" || mutate.isPending}
-                  onClick={() => mutate.mutate({ data: { id: booking.id, status: "cancelled" } })}
-                >
-                  Cancel
-                </Button>
+                  <SelectTrigger className="h-8 w-[130px] capitalize">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BOOKING_STATUSES.map((option) => (
+                      <SelectItem key={option} value={option} className="capitalize">
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableCell>
             </TableRow>
           ))}
           {bookings.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
+              <TableCell colSpan={14} className="py-10 text-center text-muted-foreground">
                 No bookings yet.
               </TableCell>
             </TableRow>
@@ -941,6 +1083,183 @@ function HistoryTab() {
         </TableBody>
       </Table>
     </Card>
+  );
+}
+
+function TermsTab() {
+  const getFn = useServerFn(adminGetSettings);
+  const saveFn = useServerFn(adminUpdateSettings);
+  const queryClient = useQueryClient();
+  const query = useQuery({ queryKey: ["admin-settings"], queryFn: () => getFn() });
+  const [draft, setDraft] = useState<{ cancellationPolicy: string; mapLocation: string; mapEmbedUrl: string } | null>(null);
+  const save = useMutation({
+    mutationFn: saveFn,
+    onSuccess: (result) => {
+      if (!result.ok) return toast.error(result.message);
+      toast.success(result.message);
+      setDraft(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
+    },
+    onError: (error: Error) => toast.error(error.message || "We could not save these settings."),
+  });
+  if (query.isPending) return <PanelLoading />;
+  if (query.isError) return <PanelError onRetry={() => query.refetch()} />;
+  const form = draft ?? query.data;
+  return (
+    <Card className="space-y-5 p-6">
+      <Field label="Cancellation and refund policy">
+        <Textarea
+          rows={8}
+          value={form.cancellationPolicy}
+          onChange={(e) => setDraft({ ...form, cancellationPolicy: e.target.value })}
+        />
+      </Field>
+      <Field label="Location (address or place name)">
+        <Input value={form.mapLocation} onChange={(e) => setDraft({ ...form, mapLocation: e.target.value })} />
+      </Field>
+      <Field label="Google Maps embed link">
+        <Input
+          placeholder="https://www.google.com/maps/embed?pb=..."
+          value={form.mapEmbedUrl}
+          onChange={(e) => setDraft({ ...form, mapEmbedUrl: e.target.value })}
+        />
+        <p className="text-xs text-muted-foreground">
+          In Google Maps choose Share → Embed a map, then paste only the link inside src="…".
+        </p>
+      </Field>
+      <div className="flex justify-end">
+        <Button disabled={save.isPending} onClick={() => save.mutate({ data: form })}>
+          {save.isPending ? <Loader2 className="size-4 animate-spin" /> : null} Save
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+type DestinationRow = {
+  id?: string;
+  name: string;
+  season_start: string;
+  season_end: string;
+  sort_order: number;
+  is_active: boolean;
+};
+
+function DestinationsTab() {
+  const listFn = useServerFn(adminListDestinations);
+  const saveFn = useServerFn(adminSaveDestination);
+  const queryClient = useQueryClient();
+  const query = useQuery({ queryKey: ["admin-destinations"], queryFn: () => listFn() });
+  const [editing, setEditing] = useState<DestinationRow | null>(null);
+  const save = useMutation({
+    mutationFn: saveFn,
+    onSuccess: (result) => {
+      if (!result.ok) return toast.error(result.message);
+      toast.success(result.message);
+      setEditing(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-destinations"] });
+    },
+    onError: (error: Error) => toast.error(error.message || "We could not save this destination."),
+  });
+  if (query.isPending) return <PanelLoading />;
+  if (query.isError) return <PanelError onRetry={() => query.refetch()} />;
+  const rows = query.data as DestinationRow[];
+  const submit = (row: DestinationRow) =>
+    save.mutate({
+      data: {
+        id: row.id,
+        name: row.name,
+        seasonStart: row.season_start,
+        seasonEnd: row.season_end,
+        sortOrder: Number(row.sort_order) || 0,
+        isActive: row.is_active,
+      },
+    });
+  return (
+    <div>
+      <div className="mb-4 flex justify-end">
+        <Button
+          onClick={() =>
+            setEditing({ name: "", season_start: "", season_end: "", sort_order: rows.length + 1, is_active: true })
+          }
+        >
+          <Plus className="size-4" /> Add destination
+        </Button>
+      </div>
+      <Card className="overflow-x-auto p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>#</TableHead>
+              <TableHead>Destination</TableHead>
+              <TableHead>Season</TableHead>
+              <TableHead>Visible</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell>{row.sort_order}</TableCell>
+                <TableCell className="font-medium">{row.name}</TableCell>
+                <TableCell>
+                  {row.season_start} to {row.season_end}
+                </TableCell>
+                <TableCell>
+                  <Switch checked={row.is_active} onCheckedChange={(checked) => submit({ ...row, is_active: checked })} />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" onClick={() => setEditing(row)}>
+                    <Pencil className="size-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+            {rows.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                  No destinations yet.
+                </TableCell>
+              </TableRow>
+            ) : null}
+          </TableBody>
+        </Table>
+      </Card>
+      <Dialog open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogTitle>{editing?.id ? "Edit destination" : "Add destination"}</DialogTitle>
+          {editing ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <Field label="Destination name" className="sm:col-span-2">
+                <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
+              </Field>
+              <Field label="Season starts (e.g. December)">
+                <Input value={editing.season_start} onChange={(e) => setEditing({ ...editing, season_start: e.target.value })} />
+              </Field>
+              <Field label="Season ends (e.g. May/June)">
+                <Input value={editing.season_end} onChange={(e) => setEditing({ ...editing, season_end: e.target.value })} />
+              </Field>
+              <Field label="Display order">
+                <Input
+                  type="number"
+                  min={0}
+                  value={editing.sort_order}
+                  onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })}
+                />
+              </Field>
+            </div>
+          ) : null}
+          <div className="mt-6 flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setEditing(null)}>
+              Cancel
+            </Button>
+            <Button disabled={save.isPending} onClick={() => editing && submit(editing)}>
+              Save
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
