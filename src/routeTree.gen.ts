@@ -14,7 +14,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as SectionIndexRouteImport } from './routes/$section/index'
+import { Route as SectionCategoryRouteImport } from './routes/$section/$category'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicWebhooksPaymentRouteImport } from './routes/api/public/webhooks/payment'
 
@@ -42,9 +45,24 @@ const FleetRoute = FleetRouteImport.update({
   path: '/fleet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SectionIndexRoute = SectionIndexRouteImport.update({
+  id: '/$section/',
+  path: '/$section/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SectionCategoryRoute = SectionCategoryRouteImport.update({
+  id: '/$section/$category',
+  path: '/$section/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -64,8 +82,11 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/fleet': typeof FleetRoute
+  '/gallery': typeof GalleryRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/$section/$category': typeof SectionCategoryRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/$section/': typeof SectionIndexRoute
   '/api/public/webhooks/payment': typeof ApiPublicWebhooksPaymentRoute
 }
 export interface FileRoutesByTo {
@@ -73,8 +94,11 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/fleet': typeof FleetRoute
+  '/gallery': typeof GalleryRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/$section/$category': typeof SectionCategoryRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/$section': typeof SectionIndexRoute
   '/api/public/webhooks/payment': typeof ApiPublicWebhooksPaymentRoute
 }
 export interface FileRoutesById {
@@ -84,8 +108,11 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/fleet': typeof FleetRoute
+  '/gallery': typeof GalleryRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/$section/$category': typeof SectionCategoryRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/$section/': typeof SectionIndexRoute
   '/api/public/webhooks/payment': typeof ApiPublicWebhooksPaymentRoute
 }
 export interface FileRouteTypes {
@@ -95,8 +122,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/fleet'
+    | '/gallery'
     | '/how-it-works'
+    | '/$section/$category'
     | '/admin'
+    | '/$section/'
     | '/api/public/webhooks/payment'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -104,8 +134,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/fleet'
+    | '/gallery'
     | '/how-it-works'
+    | '/$section/$category'
     | '/admin'
+    | '/$section'
     | '/api/public/webhooks/payment'
   id:
     | '__root__'
@@ -114,8 +147,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/contact'
     | '/fleet'
+    | '/gallery'
     | '/how-it-works'
+    | '/$section/$category'
     | '/_authenticated/admin'
+    | '/$section/'
     | '/api/public/webhooks/payment'
   fileRoutesById: FileRoutesById
 }
@@ -125,7 +161,10 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   FleetRoute: typeof FleetRoute
+  GalleryRoute: typeof GalleryRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  SectionCategoryRoute: typeof SectionCategoryRoute
+  SectionIndexRoute: typeof SectionIndexRoute
   ApiPublicWebhooksPaymentRoute: typeof ApiPublicWebhooksPaymentRoute
 }
 
@@ -166,11 +205,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FleetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/how-it-works': {
       id: '/how-it-works'
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$section/': {
+      id: '/$section/'
+      path: '/$section'
+      fullPath: '/$section/'
+      preLoaderRoute: typeof SectionIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$section/$category': {
+      id: '/$section/$category'
+      path: '/$section/$category'
+      fullPath: '/$section/$category'
+      preLoaderRoute: typeof SectionCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -207,7 +267,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   FleetRoute: FleetRoute,
+  GalleryRoute: GalleryRoute,
   HowItWorksRoute: HowItWorksRoute,
+  SectionCategoryRoute: SectionCategoryRoute,
+  SectionIndexRoute: SectionIndexRoute,
   ApiPublicWebhooksPaymentRoute: ApiPublicWebhooksPaymentRoute,
 }
 export const routeTree = rootRouteImport
