@@ -11,7 +11,10 @@ export const Route = createFileRoute("/$section/")({
       : { meta: [{ title: "Page not found | Boat Charter" }] };
   },
   beforeLoad: ({ params }) => {
-    if (!NAVIGATION_SECTIONS[params.section]) throw notFound();
+    if (!NAVIGATION_SECTIONS[params.section]) {
+      throw notFound();
+    }
+    return undefined as never;
   },
   component: SectionPage,
 });

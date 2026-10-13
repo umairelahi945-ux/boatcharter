@@ -12,7 +12,10 @@ export const Route = createFileRoute("/$section/$category")({
       : { meta: [{ title: "Page not found | Boat Charter" }] };
   },
   beforeLoad: ({ params }) => {
-    if (!getCategory(params.section, params.category)) throw notFound();
+    if (!getCategory(params.section, params.category)) {
+      throw notFound();
+    }
+    return undefined as never;
   },
   component: CategoryPage,
 });
