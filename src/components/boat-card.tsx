@@ -25,7 +25,10 @@ export const FALLBACK_IMAGE =
 
 export function BoatCard({ boat, onSelect }: { boat: BoatSummary; onSelect: () => void }) {
   return (
-    <Card className="group flex flex-col overflow-hidden border-border/70 p-0 shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-luxe)]">
+    <Card
+      data-scroll-reveal-card
+      className="group flex flex-col overflow-hidden border-border/70 p-0 shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-luxe)]"
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
           src={boat.image_urls[0] ?? FALLBACK_IMAGE}

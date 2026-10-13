@@ -31,6 +31,7 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function Contact() {
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -45,6 +46,7 @@ function Contact() {
     if (Object.keys(next).length > 0) return;
     toast.success("Thanks — our concierge will reply within one business day.");
     setName("");
+    setPhone("");
     setEmail("");
     setMessage("");
   }
@@ -71,13 +73,21 @@ function Contact() {
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
                 <Mail className="size-4" />
               </span>
-              concierge@boatcharter.example
+              <a href="mailto:contact@horizonboatcharters.com">contact@horizonboatcharters.com</a>
             </li>
             <li className="flex items-center gap-3">
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
                 <MapPin className="size-4" />
               </span>
-              Pier 12, Marina District
+              <address className="not-italic leading-relaxed">
+                Horizon Boat Charter
+                <br />
+                High Tech Services LLC
+                <br />
+                1001 S Main St STE 500
+                <br />
+                Kalispell, MT 59901
+              </address>
             </li>
             <li className="flex items-center gap-3">
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
@@ -108,6 +118,17 @@ function Contact() {
               ) : null}
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="contact-phone">Phone / WhatsApp</Label>
+              <Input
+                id="contact-phone"
+                type="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                maxLength={30}
+              />
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="contact-email">Email</Label>
               <Input
                 id="contact-email"
@@ -133,7 +154,7 @@ function Contact() {
                 <p className="text-xs font-medium text-destructive">{errors["message"]}</p>
               ) : null}
             </div>
-            <Button type="submit" size="lg" className="w-full">
+            <Button type="submit" size="lg" className="w-full text-white">
               Send enquiry
             </Button>
           </div>

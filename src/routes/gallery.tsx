@@ -31,7 +31,7 @@ function GalleryPage() {
         <img
           src={heroYacht}
           alt="Luxury yacht cruising along the coast at sunset"
-          className="max-h-[36rem] w-full object-cover"
+          className="scroll-parallax-media max-h-[36rem] w-full object-cover"
         />
       </figure>
     </main>

@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Anchor, Mail, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
+
+import horizonLogo from "@/assets/horizon-boat-charters-logo.png";
 
 export function SiteFooter() {
   return (
@@ -7,13 +9,27 @@ export function SiteFooter() {
       <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/40">
-              <Anchor className="size-4.5" />
+            <img
+              src={horizonLogo}
+              alt=""
+              aria-hidden="true"
+              className="h-9 w-auto object-contain brightness-0 invert"
+            />
+            <span className="flex flex-col items-start whitespace-nowrap text-white">
+              <span className="block text-[1.125rem] leading-none font-bold tracking-[0.025em]">
+                HORIZON
+              </span>
+              <span className="mt-1 block text-[0.625rem] leading-none font-normal tracking-[0.178em]">
+                BOAT CHARTERS
+              </span>
             </span>
-            <span className="font-display text-lg font-semibold">Boat Charter</span>
           </div>
           <p className="mt-4 max-w-xs text-sm text-white/60">
-            Curated yachts, catamarans and speedboats with vetted captains across the coast.
+            High Tech Services LLC
+            <br />
+            1001 S Main St STE 500
+            <br />
+            Kalispell, MT 59901
           </p>
         </div>
 
@@ -45,7 +61,8 @@ export function SiteFooter() {
               <Phone className="size-4 text-primary" /> +1 (305) 555 0100
             </li>
             <li className="flex items-center gap-2">
-              <Mail className="size-4 text-primary" /> concierge@boatcharter.example
+              <Mail className="size-4 text-primary" />
+              <a href="mailto:contact@horizonboatcharters.com">contact@horizonboatcharters.com</a>
             </li>
           </ul>
         </div>
@@ -60,8 +77,8 @@ export function SiteFooter() {
 
       </div>
       <div className="border-t border-white/10">
-        <div className="container-page py-6 text-xs text-white/45">
-          © {new Date().getFullYear()} Boat Charter. All rights reserved.
+        <div className="container-page py-6 text-center text-xs text-white/45">
+          © {new Date().getFullYear()} Horizon Boat Charter. All rights reserved.
         </div>
       </div>
     </footer>

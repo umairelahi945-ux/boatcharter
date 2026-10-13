@@ -1,12 +1,14 @@
 import { Link } from "@tanstack/react-router";
 
 import { FleetExplorer } from "@/components/fleet-explorer";
+import { AboutUsPage } from "@/components/about-us-page";
 import { Button } from "@/components/ui/button";
 import { NAVIGATION_SECTIONS, categoryDescription, getCategory } from "@/lib/navigation-content";
 
 export function NavigationLandingPage({ sectionSlug }: { sectionSlug: string }) {
   const section = NAVIGATION_SECTIONS[sectionSlug];
   if (!section) return <UnknownNavigationPage />;
+  if (sectionSlug === "about") return <AboutUsPage />;
 
   return (
     <main className="container-page py-14 sm:py-16">
@@ -22,7 +24,7 @@ export function NavigationLandingPage({ sectionSlug }: { sectionSlug: string }) 
         <nav aria-label={`${section.label} categories`} className="mt-10">
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {section.categories.map((category) => (
-              <li key={category.slug}>
+              <li key={category.slug} data-scroll-reveal-card>
                 <Link
                   to={`/${sectionSlug}/${category.slug}` as never}
                   className="group block h-full rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -44,7 +46,7 @@ export function NavigationLandingPage({ sectionSlug }: { sectionSlug: string }) 
             We connect guests with carefully selected vessels and experienced captains for memorable
             time on the water.
           </p>
-          <Button asChild className="mt-6">
+          <Button asChild className="mt-6 bg-white !text-[#064576] hover:bg-white/90">
             <Link to="/contact">Contact our team</Link>
           </Button>
         </div>
