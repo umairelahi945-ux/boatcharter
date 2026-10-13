@@ -1,3 +1,6 @@
+import heroPoster from "@/assets/hero-yacht.jpg";
+import { DESTINATION_STORIES } from "@/lib/destination-content";
+
 export type NavigationCategory = {
   label: string;
   slug: string;
@@ -31,24 +34,27 @@ const destinations: NavigationCategory[] = [
     inventoryLocations: ["Mahé", "Mahe"],
   },
   {
-    label: "Bahamas (Exumas)",
+    label: "Exumas, Bahamas",
     slug: "bahamas-exumas",
     seoTitle: "Boat Charters in the Bahamas Exumas | Horizon Boat Charters",
-    description: "Plan an Exumas charter in the Bahamas around your group, dates, and vessel needs.",
+    description:
+      "Plan an Exumas charter in the Bahamas around your group, dates, and vessel needs.",
     inventoryLocations: ["Bahamas", "Exumas"],
   },
   {
     label: "Curaçao",
     slug: "curacao",
     seoTitle: "Boat Charters in Curaçao | Horizon Boat Charters",
-    description: "Discover Curaçao from the water with a charter planned around your preferred vessel and schedule.",
+    description:
+      "Discover Curaçao from the water with a charter planned around your preferred vessel and schedule.",
     inventoryLocations: ["Curaçao", "Curacao"],
   },
   {
-    label: "Cozumel",
+    label: "Cozumel, Mexico",
     slug: "cozumel-mexico",
     seoTitle: "Boat Charters in Cozumel, Mexico | Horizon Boat Charters",
-    description: "Use Cozumel as your starting point for a boat charter on Mexico's Caribbean coast.",
+    description:
+      "Use Cozumel as your starting point for a boat charter on Mexico's Caribbean coast.",
     inventoryLocations: ["Cozumel"],
   },
   {
@@ -62,42 +68,48 @@ const destinations: NavigationCategory[] = [
     label: "Aruba",
     slug: "aruba",
     seoTitle: "Boat Charters in Aruba | Horizon Boat Charters",
-    description: "Explore Aruba's coast by charter, with vessel choices matched to your group and timing.",
+    description:
+      "Explore Aruba's coast by charter, with vessel choices matched to your group and timing.",
     inventoryLocations: ["Aruba"],
   },
   {
     label: "St. Martin",
     slug: "st-martin",
     seoTitle: "Boat Charters in St. Martin | Horizon Boat Charters",
-    description: "Plan a St. Martin charter and choose a vessel for the time you want to spend on the water.",
+    description:
+      "Plan a St. Martin charter and choose a vessel for the time you want to spend on the water.",
     inventoryLocations: ["Martin"],
   },
   {
     label: "Cabo San Lucas (Mexico)",
     slug: "cabo-san-lucas-mexico",
     seoTitle: "Boat Charters in Cabo San Lucas, Mexico | Horizon Boat Charters",
-    description: "Start a Baja California charter from Cabo San Lucas with a vessel suited to your group.",
+    description:
+      "Start a Baja California charter from Cabo San Lucas with a vessel suited to your group.",
     inventoryLocations: ["Cabo San Lucas"],
   },
   {
     label: "La Paz (Mexico)",
     slug: "la-paz-mexico",
     seoTitle: "Boat Charters in La Paz, Mexico | Horizon Boat Charters",
-    description: "Find a boat charter listed for La Paz, Mexico and compare options for your itinerary.",
+    description:
+      "Find a boat charter listed for La Paz, Mexico and compare options for your itinerary.",
     inventoryLocationIncludes: ["La Paz", "Mexico"],
   },
   {
     label: "Maldives (Indian Ocean)",
     slug: "maldives-indian-ocean",
     seoTitle: "Boat Charters in the Maldives | Horizon Boat Charters",
-    description: "Organize a Maldives charter around your travel dates, party size, and preferred vessel.",
+    description:
+      "Organize a Maldives charter around your travel dates, party size, and preferred vessel.",
     inventoryLocations: ["Maldives"],
   },
   {
-    label: "Cancun, Mexico",
+    label: "Cancún, Mexico",
     slug: "cancun-mexico",
     seoTitle: "Boat Charters in Cancun, Mexico | Horizon Boat Charters",
-    description: "Browse boat charter options listed for Cancun and plan time on Mexico's Caribbean coast.",
+    description:
+      "Browse boat charter options listed for Cancun and plan time on Mexico's Caribbean coast.",
     inventoryLocations: ["Cancun", "Cancún"],
   },
   {
@@ -108,14 +120,15 @@ const destinations: NavigationCategory[] = [
     inventoryLocations: ["Punta Cana"],
   },
   {
-    label: "Caribbean (Barbados, Jamaica)",
+    label: "Barbados and Jamaica",
     slug: "caribbean-barbados-jamaica",
     seoTitle: "Boat Charters in Barbados and Jamaica | Horizon Boat Charters",
-    description: "Search charter listings in Barbados and Jamaica, with results drawn from each vessel's recorded location.",
+    description:
+      "Search charter listings in Barbados and Jamaica, with results drawn from each vessel's recorded location.",
     inventoryLocations: ["Barbados", "Jamaica"],
   },
   {
-    label: "Turks and Caicos Islands - Grace Bay",
+    label: "Grace Bay, Turks and Caicos Islands",
     slug: "turks-and-caicos-grace-bay",
     seoTitle: "Boat Charters in Grace Bay, Turks and Caicos | Horizon Boat Charters",
     description: "Browse charters listed for Grace Bay and the Turks and Caicos Islands.",
@@ -197,15 +210,78 @@ export function navigationMetadata(
   const description = category
     ? categoryDescription(category.label, category.description)
     : section.description;
+  const canonicalUrl = canonicalPath
+    ? `https://horizonboatcharters.com${canonicalPath}`
+    : undefined;
+  const socialImage = category
+    ? (DESTINATION_STORIES[category.slug]?.images[0]?.src ?? heroPoster)
+    : heroPoster;
+  const imageUrl = new URL(socialImage, "https://horizonboatcharters.com/").href;
+  const scripts =
+    category && canonicalUrl && canonicalPath?.startsWith("/destinations/")
+      ? [
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              name: title,
+              description,
+              url: canonicalUrl,
+              inLanguage: "en",
+              primaryImageOfPage: { "@type": "ImageObject", contentUrl: imageUrl },
+              isPartOf: {
+                "@type": "WebSite",
+                name: "Horizon Boat Charters",
+                url: "https://horizonboatcharters.com/",
+              },
+            }).replace(/</g, "\\u003c"),
+          },
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: "https://horizonboatcharters.com/",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Destinations",
+                  item: "https://horizonboatcharters.com/destinations",
+                },
+                { "@type": "ListItem", position: 3, name: category.label, item: canonicalUrl },
+              ],
+            }).replace(/</g, "\\u003c"),
+          },
+        ]
+      : undefined;
   return {
     meta: [
       { title },
       { name: "description", content: description },
+      { name: "robots", content: "index, follow" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
+      ...(canonicalUrl
+        ? [
+            { property: "og:url", content: canonicalUrl },
+            { property: "og:type", content: "website" },
+            { property: "og:image", content: imageUrl },
+            { property: "og:site_name", content: "Horizon Boat Charters" },
+            { name: "twitter:card", content: "summary_large_image" },
+            { name: "twitter:title", content: title },
+            { name: "twitter:description", content: description },
+            { name: "twitter:image", content: imageUrl },
+          ]
+        : []),
     ],
-    ...(canonicalPath
-      ? { links: [{ rel: "canonical", href: `https://horizonboatcharters.com${canonicalPath}` }] }
-      : {}),
+    ...(canonicalPath ? { links: [{ rel: "canonical", href: canonicalUrl }] } : {}),
+    ...(scripts ? { scripts } : {}),
   };
 }
