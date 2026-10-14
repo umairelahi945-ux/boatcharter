@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+
+import { getPublicSiteInfo } from "@/lib/site.functions";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -48,6 +52,9 @@ function Contact() {
     setEmail("");
     setMessage("");
   }
+
+  const infoFn = useServerFn(getPublicSiteInfo);
+  const info = useQuery({ queryKey: ["site-info"], queryFn: () => infoFn() }).data;
 
   return (
     <div className="container-page py-14">
@@ -139,6 +146,29 @@ function Contact() {
           </div>
         </form>
       </div>
+      {info && (info.cancellationPolicy || info.mapEmbedUrl) ? (
+        <div className="mt-14 grid gap-8 lg:grid-cols-2">
+          {info.cancellationPolicy ? (
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <h2 className="text-xl font-semibold">Cancellation &amp; refund policy</h2>
+              <p className="mt-3 text-sm whitespace-pre-line text-muted-foreground">{info.cancellationPolicy}</p>
+            </section>
+          ) : null}
+          {info.mapEmbedUrl ? (
+            <section className="overflow-hidden rounded-2xl border border-border bg-card">
+              {info.mapLocation ? <p className="p-4 text-sm font-medium">{info.mapLocation}</p> : null}
+              <iframe
+                title="Our location"
+                src={info.mapEmbedUrl}
+                className="h-80 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+              />
+            </section>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 
 const NAV_LINKS = [
   { to: "/fleet", label: "Explore Yachts" },
+  { to: "/destinations", label: "Destinations" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/contact", label: "Contact" },
 ] as const;
