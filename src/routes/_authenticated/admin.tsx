@@ -1095,7 +1095,10 @@ function TermsTab() {
   const save = useMutation({
     mutationFn: saveFn,
     onSuccess: (result) => {
-      if (!result.ok) return toast.error(result.message);
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
       toast.success(result.message);
       setDraft(null);
       queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
@@ -1154,7 +1157,10 @@ function DestinationsTab() {
   const save = useMutation({
     mutationFn: saveFn,
     onSuccess: (result) => {
-      if (!result.ok) return toast.error(result.message);
+      if (!result.ok) {
+        toast.error(result.message);
+        return;
+      }
       toast.success(result.message);
       setEditing(null);
       queryClient.invalidateQueries({ queryKey: ["admin-destinations"] });
