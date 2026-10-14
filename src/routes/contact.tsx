@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+
+import { getPublicSiteInfo } from "@/lib/site.functions";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -31,7 +35,6 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function Contact() {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,10 +49,12 @@ function Contact() {
     if (Object.keys(next).length > 0) return;
     toast.success("Thanks — our concierge will reply within one business day.");
     setName("");
-    setPhone("");
     setEmail("");
     setMessage("");
   }
+
+  const infoFn = useServerFn(getPublicSiteInfo);
+  const info = useQuery({ queryKey: ["site-info"], queryFn: () => infoFn() }).data;
 
   return (
     <div className="container-page py-14">
@@ -73,21 +78,13 @@ function Contact() {
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
                 <Mail className="size-4" />
               </span>
-              <a href="mailto:contact@horizonboatcharters.com">contact@horizonboatcharters.com</a>
+              concierge@boatcharter.example
             </li>
             <li className="flex items-center gap-3">
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
                 <MapPin className="size-4" />
               </span>
-              <address className="not-italic leading-relaxed">
-                Horizon Boat Charter
-                <br />
-                High Tech Services LLC
-                <br />
-                1001 S Main St STE 500
-                <br />
-                Kalispell, MT 59901
-              </address>
+              Pier 12, Marina District
             </li>
             <li className="flex items-center gap-3">
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
@@ -118,17 +115,6 @@ function Contact() {
               ) : null}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="contact-phone">Phone / WhatsApp</Label>
-              <Input
-                id="contact-phone"
-                type="tel"
-                autoComplete="tel"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                maxLength={30}
-              />
-            </div>
-            <div className="space-y-1.5">
               <Label htmlFor="contact-email">Email</Label>
               <Input
                 id="contact-email"
@@ -154,12 +140,35 @@ function Contact() {
                 <p className="text-xs font-medium text-destructive">{errors["message"]}</p>
               ) : null}
             </div>
-            <Button type="submit" size="lg" className="w-full text-white">
+            <Button type="submit" size="lg" className="w-full">
               Send enquiry
             </Button>
           </div>
         </form>
       </div>
+      {info && (info.cancellationPolicy || info.mapEmbedUrl) ? (
+        <div className="mt-14 grid gap-8 lg:grid-cols-2">
+          {info.cancellationPolicy ? (
+            <section className="rounded-2xl border border-border bg-card p-6">
+              <h2 className="text-xl font-semibold">Cancellation &amp; refund policy</h2>
+              <p className="mt-3 text-sm whitespace-pre-line text-muted-foreground">{info.cancellationPolicy}</p>
+            </section>
+          ) : null}
+          {info.mapEmbedUrl ? (
+            <section className="overflow-hidden rounded-2xl border border-border bg-card">
+              {info.mapLocation ? <p className="p-4 text-sm font-medium">{info.mapLocation}</p> : null}
+              <iframe
+                title="Our location"
+                src={info.mapEmbedUrl}
+                className="h-80 w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+              />
+            </section>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

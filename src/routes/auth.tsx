@@ -246,7 +246,7 @@ function AuthPage() {
           {mode === "signin" ? "Authorized administrator without a password? " : "Already set a password? "}
           <button
             type="button"
-            className="!text-[#064576] underline-offset-4 hover:underline"
+            className="text-primary underline-offset-4 hover:underline"
             onClick={() => {
               setError(null);
               setMode(mode === "signin" ? "setup" : "signin");

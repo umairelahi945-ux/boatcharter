@@ -1107,9 +1107,7 @@ function TermsTab() {
   });
   if (query.isPending) return <PanelLoading />;
   if (query.isError) return <PanelError onRetry={() => query.refetch()} />;
-  const settings = query.data;
-  if (!settings) return <PanelLoading />;
-  const form = draft ?? settings;
+  const form = draft ?? query.data;
   return (
     <Card className="space-y-5 p-6">
       <Field label="Cancellation and refund policy">
@@ -1171,8 +1169,7 @@ function DestinationsTab() {
   });
   if (query.isPending) return <PanelLoading />;
   if (query.isError) return <PanelError onRetry={() => query.refetch()} />;
-  const rows = query.data;
-  if (!rows) return <PanelLoading />;
+  const rows = query.data as DestinationRow[];
   const submit = (row: DestinationRow) =>
     save.mutate({
       data: {
