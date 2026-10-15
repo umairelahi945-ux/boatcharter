@@ -1,19 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Search, SlidersHorizontal, Ship } from "lucide-react";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 
 import { BoatCard, type BoatSummary } from "@/components/boat-card";
-import { BookingDialog } from "@/components/booking-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { listBoats } from "@/lib/charter.functions";
 import { BOAT_CATEGORIES } from "@/lib/money";
 
 const ANY = "any";
+const BookingDialog = lazy(() =>
+  import("@/components/booking-dialog").then((module) => ({ default: module.BookingDialog })),
+);
 
 export function FleetExplorer({ limit }: { limit?: number }) {
   const [search, setSearch] = useState("");
@@ -22,6 +30,7 @@ export function FleetExplorer({ limit }: { limit?: number }) {
   const [guests, setGuests] = useState("");
   const [selected, setSelected] = useState<BoatSummary | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMounted, setDialogMounted] = useState(false);
 
   const fetchBoats = useServerFn(listBoats);
   const filters = useMemo(
@@ -147,6 +156,7 @@ export function FleetExplorer({ limit }: { limit?: number }) {
                 boat={boat}
                 onSelect={() => {
                   setSelected(boat);
+                  setDialogMounted(true);
                   setDialogOpen(true);
                 }}
               />
@@ -155,7 +165,23 @@ export function FleetExplorer({ limit }: { limit?: number }) {
         )}
       </div>
 
-      <BookingDialog boat={selected} open={dialogOpen} onOpenChange={setDialogOpen} />
+      {dialogMounted && selected ? (
+        <Suspense
+          fallback={
+            <div
+              className="fixed inset-0 z-[100] grid place-items-center bg-slate-950/40 p-4"
+              role="status"
+              aria-live="polite"
+            >
+              <p className="rounded-xl bg-card px-5 py-3 text-sm font-medium shadow-xl">
+                Loading booking form…
+              </p>
+            </div>
+          }
+        >
+          <BookingDialog boat={selected} open={dialogOpen} onOpenChange={setDialogOpen} />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

@@ -87,7 +87,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Boat Charter — Luxury Yacht & Boat Rentals" },
       {
         property: "og:description",
-        content: "Hourly and daily charters across a curated yacht selection, booked online in minutes.",
+        content:
+          "Hourly and daily charters across a curated yacht selection, booked online in minutes.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -98,7 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap",
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", href: "/favicon.png" },
@@ -130,8 +131,11 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
+        <a className="skip-link" href="#main-content">
+          Skip to content
+        </a>
         <SiteHeader />
-        <main className="flex-1">
+        <main id="main-content" className="flex-1" tabIndex={-1}>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>
@@ -141,4 +145,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-
