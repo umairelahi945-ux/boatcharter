@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Anchor, Mail, Phone } from "lucide-react";
+import { Anchor } from "lucide-react";
 
 export function SiteFooter() {
   return (
     <footer className="mt-24 surface-navy">
-      <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <div className="flex items-center gap-2.5">
             <span className="flex size-9 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/40">
@@ -12,22 +12,27 @@ export function SiteFooter() {
             </span>
             <span className="font-display text-lg font-semibold">Boat Charter</span>
           </div>
-          <p className="mt-4 max-w-xs text-sm text-white/60">
-            Curated yachts, catamarans and speedboats with vetted captains across the coast.
+          <p className="mt-4 max-w-xs text-sm text-white/65">
+            Compare vessel details and rates, then send a booking request for your chosen dates.
           </p>
         </div>
 
-        <div>
-          <h3 className="text-sm font-semibold tracking-wide text-white uppercase">Explore</h3>
-          <ul className="mt-4 space-y-2.5 text-sm text-white/60">
+        <nav aria-label="Footer navigation">
+          <h2 className="text-sm font-semibold tracking-wide text-white uppercase">Explore</h2>
+          <ul className="mt-4 space-y-2.5 text-sm text-white/70">
             <li>
               <Link to="/fleet" className="hover:text-primary">
-                Explore Yachts
+                Explore yachts
+              </Link>
+            </li>
+            <li>
+              <Link to="/destinations" className="hover:text-primary">
+                Destinations
               </Link>
             </li>
             <li>
               <Link to="/how-it-works" className="hover:text-primary">
-                How It Works
+                How it works
               </Link>
             </li>
             <li>
@@ -36,32 +41,22 @@ export function SiteFooter() {
               </Link>
             </li>
           </ul>
-        </div>
+        </nav>
 
         <div>
-          <h3 className="text-sm font-semibold tracking-wide text-white uppercase">Charter desk</h3>
-          <ul className="mt-4 space-y-2.5 text-sm text-white/60">
-            <li className="flex items-center gap-2">
-              <Phone className="size-4 text-primary" /> +1 (305) 555 0100
-            </li>
-            <li className="flex items-center gap-2">
-              <Mail className="size-4 text-primary" /> concierge@boatcharter.example
-            </li>
+          <h2 className="text-sm font-semibold tracking-wide text-white uppercase">
+            Booking details
+          </h2>
+          <ul className="mt-4 space-y-2.5 text-sm text-white/70">
+            <li>Hourly and daily rates are shown by vessel.</li>
+            <li>The quote includes the service fee and deposit split.</li>
+            <li>Review the booking and payment result after you submit.</li>
           </ul>
         </div>
-
-        <div>
-          <h3 className="text-sm font-semibold tracking-wide text-white uppercase">Good to know</h3>
-          <ul className="mt-4 space-y-2.5 text-sm text-white/60">
-            <li>Secure card payments only</li>
-            <li>20% deposit at booking, balance due before departure</li>
-          </ul>
-        </div>
-
       </div>
       <div className="border-t border-white/10">
-        <div className="container-page py-6 text-xs text-white/45">
-          © {new Date().getFullYear()} Boat Charter. All rights reserved.
+        <div className="container-page py-6 text-xs text-white/55">
+          Copyright © {new Date().getFullYear()} Boat Charter. All rights reserved.
         </div>
       </div>
     </footer>

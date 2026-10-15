@@ -10,12 +10,12 @@ export const Route = createFileRoute("/how-it-works")({
       {
         name: "description",
         content:
-          "From choosing a boat to boarding: pricing rules, the 2-hour minimum, secure card payment and what happens after you book.",
+          "Learn how to compare boats, choose charter dates, review the price and submit a booking request.",
       },
       { property: "og:title", content: "How Chartering Works — Boat Charter" },
       {
         property: "og:description",
-        content: "Pricing rules, secure card payment and what happens after you book.",
+        content: "Compare boats, set your dates and review the quote before requesting a charter.",
       },
     ],
   }),
@@ -25,23 +25,23 @@ export const Route = createFileRoute("/how-it-works")({
 const STEPS = [
   {
     icon: Ship,
-    title: "1. Choose your boat",
-    body: "Filter the yachts by category, home port and guest count. Each listing lists capacity, length and amenities.",
+    title: "Choose a vessel",
+    body: "Filter listings by category, location and guest count. Each listing shows its capacity, length, amenities and rates.",
   },
   {
     icon: CalendarClock,
-    title: "2. Price your window",
-    body: "Pick hourly or daily, then set start and end times. Hourly charters have a 2 hour minimum; daily charters a 1 day minimum.",
+    title: "Set your dates",
+    body: "Choose hourly or daily pricing and enter a start and end time. The quote enforces the minimum duration for each option.",
   },
   {
     icon: CreditCard,
-    title: "3. Pay securely",
-    body: "A single card payment covers the charter and the 10% service fee. We never handle cash and never store card numbers.",
+    title: "Review the estimate",
+    body: "The quote shows the listed rate, service fee, total, 20% deposit and remaining balance before you submit.",
   },
   {
     icon: Sparkles,
-    title: "4. Board and cruise",
-    body: "You receive a booking reference instantly. Our concierge confirms the meeting dock and captain within 24 hours.",
+    title: "Submit a booking request",
+    body: "Add your contact details and guest count. The system checks for date conflicts and shows the booking and payment result after submission.",
   },
 ];
 
@@ -52,7 +52,7 @@ function HowItWorks() {
         <p className="text-xs font-semibold tracking-[0.2em] text-primary uppercase">Process</p>
         <h1 className="mt-2 text-4xl font-semibold">How chartering works</h1>
         <p className="mt-3 text-muted-foreground">
-          Transparent pricing, live availability and one secure payment method.
+          The booking flow shows the quote and deposit split before you submit your request.
         </p>
       </header>
 
@@ -74,10 +74,12 @@ function HowItWorks() {
       <section className="mt-14 rounded-2xl surface-navy p-8 md:p-12">
         <h2 className="text-2xl font-semibold text-white">Pricing rules at a glance</h2>
         <ul className="mt-5 grid gap-3 text-sm text-white/70 sm:grid-cols-2">
-          <li>• Hourly rate × hours booked, rounded up to the next hour.</li>
-          <li>• Daily rate × days booked, rounded up to the next day.</li>
-          <li>• A 10% service fee is added to every charter subtotal.</li>
-          <li>• Fuel policy and captain inclusion are listed per boat.</li>
+          <li>Hourly rates are multiplied by booked hours, rounded up to a whole hour.</li>
+          <li>Daily rates are multiplied by booked days, rounded up to a whole day.</li>
+          <li>A 10% service fee is added to the charter subtotal.</li>
+          <li>
+            A 20% deposit is calculated from the total; the remaining balance is shown separately.
+          </li>
         </ul>
         <Button asChild className="mt-8" size="lg">
           <Link to="/fleet">Start booking</Link>

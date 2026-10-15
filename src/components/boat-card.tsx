@@ -31,6 +31,8 @@ export function BoatCard({ boat, onSelect }: { boat: BoatSummary; onSelect: () =
           src={boat.image_urls[0] ?? FALLBACK_IMAGE}
           alt={boat.title}
           loading="lazy"
+          decoding="async"
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           onError={(event) => {
             event.currentTarget.src = FALLBACK_IMAGE;
           }}

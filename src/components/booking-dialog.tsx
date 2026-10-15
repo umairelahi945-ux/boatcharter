@@ -9,7 +9,6 @@ import {
   Lock,
   MapPin,
   Ruler,
-  ShieldCheck,
   Ticket,
   Users,
 } from "lucide-react";
@@ -23,7 +22,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { getPaymentMethodInfo, requestBooking } from "@/lib/charter.functions";
 import { computeDeposit, computeQuote, formatMoney, type BookingType } from "@/lib/money";
@@ -206,7 +211,9 @@ export function BookingDialog({
               <BadgeCheck className="size-8" />
             </div>
             <h2 className="mt-6 font-display text-3xl font-semibold">
-              {confirmation.paymentStatus === "failed" ? "Booking saved" : "Booking confirmed"}
+              {confirmation.bookingStatus === "confirmed"
+                ? "Booking confirmed"
+                : "Booking request received"}
             </h2>
             <p className="mt-2 text-muted-foreground">{confirmation.message}</p>
 
@@ -271,7 +278,7 @@ export function BookingDialog({
             </div>
 
             <p className="mt-6 text-sm text-muted-foreground">
-              A charter specialist will contact {email} within 24 hours.
+              Keep the booking reference above if you need to ask about this request.
             </p>
             <Button className="mt-6" size="lg" onClick={() => handleClose(false)}>
               Done
@@ -314,12 +321,17 @@ export function BookingDialog({
 
               <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Spec label="Category" value={boat.category} />
-                <Spec label="Capacity" value={`${boat.capacity} guests`} icon={<Users className="size-3.5" />} />
-                <Spec label="Length" value={`${boat.length_ft} ft`} icon={<Ruler className="size-3.5" />} />
                 <Spec
-                  label="Status"
-                  value={boat.is_available ? "Available" : "Unavailable"}
+                  label="Capacity"
+                  value={`${boat.capacity} guests`}
+                  icon={<Users className="size-3.5" />}
                 />
+                <Spec
+                  label="Length"
+                  value={`${boat.length_ft} ft`}
+                  icon={<Ruler className="size-3.5" />}
+                />
+                <Spec label="Status" value={boat.is_available ? "Available" : "Unavailable"} />
               </div>
 
               <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
@@ -425,7 +437,6 @@ export function BookingDialog({
                   {errors["snacks"] ? <FieldError message={errors["snacks"]} /> : null}
                 </div>
 
-
                 {quote?.error ? (
                   <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
                     <CircleAlert className="mt-0.5 size-4 shrink-0" />
@@ -434,7 +445,10 @@ export function BookingDialog({
                 ) : (
                   <div className="rounded-xl border border-border bg-muted/40 p-4 text-sm">
                     <Row label="Selected boat" value={boat.title} />
-                    <Row label="Booking type" value={bookingType === "hourly" ? "Hourly" : "Daily"} />
+                    <Row
+                      label="Booking type"
+                      value={bookingType === "hourly" ? "Hourly" : "Daily"}
+                    />
                     <Row
                       label="Snacks"
                       value={snacksOption ? SNACKS_LABEL[snacksOption] : "Not selected"}
@@ -443,7 +457,10 @@ export function BookingDialog({
                       label="Duration"
                       value={`${quote?.duration ?? 0} ${quote?.unitLabel ?? ""}`}
                     />
-                    <Row label="Rate" value={`${formatMoney(quote?.rateCents ?? 0)} / ${bookingType === "hourly" ? "hour" : "day"}`} />
+                    <Row
+                      label="Rate"
+                      value={`${formatMoney(quote?.rateCents ?? 0)} / ${bookingType === "hourly" ? "hour" : "day"}`}
+                    />
                     <Row label="Subtotal" value={formatMoney(quote?.subtotalCents ?? 0)} />
                     <Row label="Service fee (10%)" value={formatMoney(quote?.feesCents ?? 0)} />
                     <Separator className="my-2" />
@@ -544,10 +561,7 @@ export function BookingDialog({
                       label="Charged now (20% deposit)"
                       value={formatMoney(split.depositCents)}
                     />
-                    <Row
-                      label="Balance due later (80%)"
-                      value={formatMoney(split.balanceCents)}
-                    />
+                    <Row label="Balance due later (80%)" value={formatMoney(split.balanceCents)} />
                     <Row label="Payment status" value="Pending until submitted" />
                   </div>
                 </div>
@@ -569,9 +583,8 @@ export function BookingDialog({
                   )}
                 </Button>
 
-                <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-                  <ShieldCheck className="size-3.5 text-primary" /> Instant confirmation once the
-                  payment clears.
+                <p className="text-center text-xs text-muted-foreground" role="status">
+                  Your booking reference and payment result will appear after submission.
                 </p>
                 {!boat.is_available ? (
                   <p className="flex items-center justify-center gap-1.5 text-xs text-destructive">
