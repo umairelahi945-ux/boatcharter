@@ -29,6 +29,13 @@
       "when": 1792006989336,
       "tag": "0003_restrict_site_settings_read",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792419042167,
+      "tag": "0004_booking_admin_tracking",
+      "breakpoints": true
     }
   ]
 }

@@ -95,6 +95,7 @@ export type Database = {
       bookings: {
         Row: {
           additional_passengers: number
+          admin_status: string | null
           amount_paid_cents: number
           balance_due_cents: number
           boat_id: string | null
@@ -111,7 +112,9 @@ export type Database = {
           fees_cents: number
           guest_count: number
           id: string
+          payment_link_sent: boolean
           payment_status: string
+          payment_tracking_status: string
           reference: string
           snacks_option: string
           start_date: string
@@ -122,6 +125,7 @@ export type Database = {
         }
         Insert: {
           additional_passengers?: number
+          admin_status?: string | null
           amount_paid_cents?: number
           balance_due_cents?: number
           boat_id?: string | null
@@ -138,7 +142,9 @@ export type Database = {
           fees_cents?: number
           guest_count?: number
           id?: string
+          payment_link_sent?: boolean
           payment_status?: string
+          payment_tracking_status?: string
           reference: string
           snacks_option?: string
           start_date: string
@@ -149,6 +155,7 @@ export type Database = {
         }
         Update: {
           additional_passengers?: number
+          admin_status?: string | null
           amount_paid_cents?: number
           balance_due_cents?: number
           boat_id?: string | null
@@ -165,7 +172,9 @@ export type Database = {
           fees_cents?: number
           guest_count?: number
           id?: string
+          payment_link_sent?: boolean
           payment_status?: string
+          payment_tracking_status?: string
           reference?: string
           snacks_option?: string
           start_date?: string
