@@ -41,7 +41,9 @@ import {
   adminUpdateSettings,
   adminListDestinations,
   adminSaveDestination,
-  BOOKING_STATUSES,
+  ADMIN_BOOKING_STATUSES,
+  PAYMENT_TRACKING_STATUSES,
+  updateBookingTracking,
   createAdjustment,
   createBoat,
   deleteBoat,
@@ -50,7 +52,6 @@ import {
   refundPayment,
   setBoatAvailability,
   updateBoat,
-  updateBookingStatus,
   updatePaymentStatus,
 } from "@/lib/admin.functions";
 import { BOAT_CATEGORIES, formatDateTime, formatMoney } from "@/lib/money";
@@ -698,14 +699,68 @@ function BoatsTab() {
   );
 }
 
+const ADMIN_STATUS_LABELS: Record<(typeof ADMIN_BOOKING_STATUSES)[number], string> = {
+  inquiry_sent_to_captain: "Inquiry Sent to Captain",
+  refused_by_captain: "Refused by the Captain",
+  booking_sent_to_customer: "Booking Sent to Customer",
+  refused_by_customer: "Refused by the Customer",
+  confirmed: "Confirmed",
+  confirmation_sent_to_customer: "Confirmation Sent to Customer",
+  completed: "Completed",
+  cancelled: "Cancelled",
+  refunded: "Refunded",
+};
+const PAYMENT_TRACKING_LABELS: Record<(typeof PAYMENT_TRACKING_STATUSES)[number], string> = {
+  pending: "Pending",
+  paid: "Paid",
+  unpaid: "Unpaid",
+};
+
+function DepositInput({
+  cents,
+  disabled,
+  onSave,
+}: {
+  cents: number;
+  disabled: boolean;
+  onSave: (cents: number) => void;
+}) {
+  const [value, setValue] = useState((Number(cents) / 100).toFixed(2));
+  const commit = () => {
+    const parsed = Math.round(Number(value) * 100);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      toast.error("Enter a valid deposit amount.");
+      setValue((Number(cents) / 100).toFixed(2));
+      return;
+    }
+    if (parsed !== Number(cents)) onSave(parsed);
+  };
+  return (
+    <Input
+      type="number"
+      min={0}
+      step="0.01"
+      value={value}
+      disabled={disabled}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+      }}
+      className="h-8 w-[110px]"
+      aria-label="Deposit amount"
+    />
+  );
+}
+
 function BookingsTab() {
   const queryClient = useQueryClient();
   const listFn = useServerFn(adminListBookings);
   const query = useQuery({ queryKey: ["admin-bookings"], queryFn: () => listFn() });
-  const statusFn = useServerFn(updateBookingStatus);
+  const trackingFn = useServerFn(updateBookingTracking);
 
   const mutate = useMutation({
-    mutationFn: statusFn,
+    mutationFn: trackingFn,
     onSuccess: (result) => {
       if (!result.ok) {
         toast.error(result.message);
@@ -732,13 +787,15 @@ function BookingsTab() {
             <TableHead>Boat</TableHead>
             <TableHead>Captain / Company</TableHead>
             <TableHead>Passengers</TableHead>
+            <TableHead>Additional Pax</TableHead>
             <TableHead>Window</TableHead>
             <TableHead>Snacks</TableHead>
             <TableHead>Total</TableHead>
-            <TableHead>Deposit (20%)</TableHead>
+            <TableHead>Deposit amount</TableHead>
             <TableHead>Paid</TableHead>
             <TableHead>Remaining balance</TableHead>
             <TableHead>Payment</TableHead>
+            <TableHead>Payment link sent</TableHead>
             <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
@@ -761,9 +818,26 @@ function BookingsTab() {
                 <p>{booking.captain_name || "—"}</p>
                 <p className="text-muted-foreground">{booking.company_name}</p>
               </TableCell>
-              <TableCell className="text-xs whitespace-nowrap">
-                {booking.guest_count}
-                {booking.additional_passengers > 0 ? ` (+${booking.additional_passengers} extra)` : ""}
+              <TableCell className="text-xs whitespace-nowrap">{booking.guest_count}</TableCell>
+              <TableCell>
+                <Select
+                  value={booking.additional_passengers > 0 ? String(booking.additional_passengers) : ""}
+                  disabled={mutate.isPending}
+                  onValueChange={(value) =>
+                    mutate.mutate({ data: { id: booking.id, additionalPassengers: Number(value) } })
+                  }
+                >
+                  <SelectTrigger className="h-8 w-[80px]">
+                    <SelectValue placeholder="—" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                      <SelectItem key={n} value={String(n)}>
+                        {n}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </TableCell>
               <TableCell className="text-xs">
                 {formatDateTime(booking.start_date)}
@@ -774,29 +848,73 @@ function BookingsTab() {
                 {booking.snacks_option === "with_snacks" ? "With Snacks" : "Without Snacks"}
               </TableCell>
               <TableCell>{formatMoney(booking.total_price_cents)}</TableCell>
-              <TableCell>{formatMoney(booking.deposit_cents)}</TableCell>
+              <TableCell>
+                <DepositInput
+                  key={`${booking.id}-${booking.deposit_cents}`}
+                  cents={booking.deposit_cents}
+                  disabled={mutate.isPending}
+                  onSave={(cents) => mutate.mutate({ data: { id: booking.id, depositCents: cents } })}
+                />
+              </TableCell>
               <TableCell>{formatMoney(booking.paid_to_date_cents)}</TableCell>
               <TableCell className="font-medium">
                 {formatMoney(booking.remaining_balance_cents)}
               </TableCell>
               <TableCell>
-                <StatusBadge status={booking.payment_status} />
-              </TableCell>
-              <TableCell>
                 <Select
-                  value={booking.status}
+                  value={booking.payment_tracking_status}
                   disabled={mutate.isPending}
                   onValueChange={(value) =>
-                    mutate.mutate({ data: { id: booking.id, status: value as (typeof BOOKING_STATUSES)[number] } })
+                    mutate.mutate({
+                      data: {
+                        id: booking.id,
+                        paymentTrackingStatus: value as (typeof PAYMENT_TRACKING_STATUSES)[number],
+                      },
+                    })
                   }
                 >
-                  <SelectTrigger className="h-8 w-[130px] capitalize">
+                  <SelectTrigger className="h-8 w-[110px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {BOOKING_STATUSES.map((option) => (
-                      <SelectItem key={option} value={option} className="capitalize">
-                        {option}
+                    {PAYMENT_TRACKING_STATUSES.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {PAYMENT_TRACKING_LABELS[option]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2 text-xs whitespace-nowrap">
+                  <Switch
+                    checked={booking.payment_link_sent}
+                    disabled={mutate.isPending}
+                    onCheckedChange={(checked) =>
+                      mutate.mutate({ data: { id: booking.id, paymentLinkSent: checked } })
+                    }
+                    aria-label="Payment link sent"
+                  />
+                  {booking.payment_link_sent ? "Sent" : "Not sent"}
+                </div>
+              </TableCell>
+              <TableCell>
+                <Select
+                  value={booking.admin_status ?? ""}
+                  disabled={mutate.isPending}
+                  onValueChange={(value) =>
+                    mutate.mutate({
+                      data: { id: booking.id, adminStatus: value as (typeof ADMIN_BOOKING_STATUSES)[number] },
+                    })
+                  }
+                >
+                  <SelectTrigger className="h-8 w-[220px]">
+                    <SelectValue placeholder="Not set" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ADMIN_BOOKING_STATUSES.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {ADMIN_STATUS_LABELS[option]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -806,7 +924,7 @@ function BookingsTab() {
           ))}
           {bookings.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={14} className="py-10 text-center text-muted-foreground">
+              <TableCell colSpan={16} className="py-10 text-center text-muted-foreground">
                 No bookings yet.
               </TableCell>
             </TableRow>

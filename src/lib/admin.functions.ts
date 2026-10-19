@@ -316,6 +316,65 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     };
   });
 
+export const ADMIN_BOOKING_STATUSES = [
+  "inquiry_sent_to_captain",
+  "refused_by_captain",
+  "booking_sent_to_customer",
+  "refused_by_customer",
+  "confirmed",
+  "confirmation_sent_to_customer",
+  "completed",
+  "cancelled",
+  "refunded",
+] as const;
+export const PAYMENT_TRACKING_STATUSES = ["pending", "paid", "unpaid"] as const;
+
+/** Manual admin-only booking tracking. Never touched automatically by payment logic. */
+export const updateBookingTracking = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (data: {
+      id: string;
+      adminStatus?: (typeof ADMIN_BOOKING_STATUSES)[number];
+      paymentTrackingStatus?: (typeof PAYMENT_TRACKING_STATUSES)[number];
+      paymentLinkSent?: boolean;
+      depositCents?: number;
+      additionalPassengers?: number;
+    }) =>
+      z
+        .object({
+          id: z.string().uuid(),
+          adminStatus: z.enum(ADMIN_BOOKING_STATUSES).optional(),
+          paymentTrackingStatus: z.enum(PAYMENT_TRACKING_STATUSES).optional(),
+          paymentLinkSent: z.boolean().optional(),
+          depositCents: z.number().int().min(0).max(100_000_000).optional(),
+          additionalPassengers: z.number().int().min(1).max(10).optional(),
+        })
+        .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    const supabase = await adminClient(context);
+    const update: {
+      admin_status?: string;
+      payment_tracking_status?: string;
+      payment_link_sent?: boolean;
+      deposit_cents?: number;
+      additional_passengers?: number;
+    } = {};
+    if (data.adminStatus !== undefined) update.admin_status = data.adminStatus;
+    if (data.paymentTrackingStatus !== undefined) update.payment_tracking_status = data.paymentTrackingStatus;
+    if (data.paymentLinkSent !== undefined) update.payment_link_sent = data.paymentLinkSent;
+    if (data.depositCents !== undefined) update.deposit_cents = data.depositCents;
+    if (data.additionalPassengers !== undefined) update.additional_passengers = data.additionalPassengers;
+    if (Object.keys(update).length === 0) return { ok: true as const, message: "Nothing to update." };
+    const { error } = await supabase.from("bookings").update(update).eq("id", data.id);
+    if (error) {
+      console.error("[admin] update booking tracking failed", error);
+      return { ok: false as const, message: "We could not update this booking." };
+    }
+    return { ok: true as const, message: "Booking updated." };
+  });
+
 export const adminListPayments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
