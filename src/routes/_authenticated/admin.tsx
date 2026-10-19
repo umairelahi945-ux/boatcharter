@@ -821,7 +821,7 @@ function BookingsTab() {
               <TableCell className="text-xs whitespace-nowrap">{booking.guest_count}</TableCell>
               <TableCell>
                 <Select
-                  value={booking.additional_passengers > 0 ? String(booking.additional_passengers) : undefined}
+                  value={booking.additional_passengers > 0 ? String(booking.additional_passengers) : ""}
                   disabled={mutate.isPending}
                   onValueChange={(value) =>
                     mutate.mutate({ data: { id: booking.id, additionalPassengers: Number(value) } })
@@ -900,7 +900,7 @@ function BookingsTab() {
               </TableCell>
               <TableCell>
                 <Select
-                  value={booking.admin_status ?? undefined}
+                  value={booking.admin_status ?? ""}
                   disabled={mutate.isPending}
                   onValueChange={(value) =>
                     mutate.mutate({
