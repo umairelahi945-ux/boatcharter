@@ -52,7 +52,6 @@ import {
   refundPayment,
   setBoatAvailability,
   updateBoat,
-  updateBookingStatus,
   updatePaymentStatus,
 } from "@/lib/admin.functions";
 import { BOAT_CATEGORIES, formatDateTime, formatMoney } from "@/lib/money";
