@@ -17,9 +17,9 @@ dist-ssr
 *.local
 
 # Environment files
-.env
-.env.*
-!.env.example
+# .env holds only publishable (browser-safe) keys and must be committed so published builds can reach the backend.
+.env.local
+.env.*.local
 
 # Wrangler / Cloudflare
 .wrangler/
