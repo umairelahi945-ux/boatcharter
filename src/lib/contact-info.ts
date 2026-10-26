@@ -1,0 +1,2 @@
+export const BUSINESS_PHONE_DISPLAY = "+1 406 500 0125";
+export const BUSINESS_PHONE_HREF = "tel:+14065000125";

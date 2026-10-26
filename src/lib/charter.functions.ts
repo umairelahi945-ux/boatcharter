@@ -27,11 +27,37 @@ export type BookingInput = z.infer<typeof bookingInputSchema>;
 
 const boatFilterSchema = z.object({
   location: z.string().trim().max(120).optional(),
+  locations: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1)
+        .max(120)
+        .regex(/^[\p{L}\p{N} -]+$/u),
+    )
+    .max(4)
+    .optional(),
+  locationIncludes: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1)
+        .max(120)
+        .regex(/^[\p{L}\p{N} -]+$/u),
+    )
+    .max(4)
+    .optional(),
   category: z.string().trim().max(60).optional(),
   guests: z.number().int().min(0).max(500).optional(),
   startISO: z.string().optional(),
   endISO: z.string().optional(),
   search: z.string().trim().max(120).optional(),
+  ratePeriod: z.enum(["hourly", "daily"]).optional(),
+  minRateCents: z.number().int().min(0).max(100_000_000).optional(),
+  maxRateCents: z.number().int().min(0).max(100_000_000).optional(),
+  amenity: z.string().trim().min(1).max(60).optional(),
 });
 
 export type BoatFilters = z.infer<typeof boatFilterSchema>;
@@ -51,8 +77,19 @@ export const listBoats = createServerFn({ method: "GET" })
 
     if (data.category) query = query.eq("category", data.category);
     if (data.location) query = query.ilike("location", `%${data.location}%`);
+    if (data.locations?.length) {
+      query = query.or(data.locations.map((location) => `location.ilike.%${location}%`).join(","));
+    }
+    for (const location of data.locationIncludes ?? []) {
+      query = query.ilike("location", `%${location}%`);
+    }
     if (data.guests && data.guests > 0) query = query.gte("capacity", data.guests);
     if (data.search) query = query.ilike("title", `%${data.search}%`);
+    if (data.amenity) query = query.contains("amenities", [data.amenity]);
+    const rateColumn = data.ratePeriod === "hourly" ? "hourly_rate_cents" : "daily_rate_cents";
+    if (data.ratePeriod) query = query.gt(rateColumn, 0);
+    if (data.minRateCents !== undefined) query = query.gte(rateColumn, data.minRateCents);
+    if (data.maxRateCents !== undefined) query = query.lte(rateColumn, data.maxRateCents);
 
     const { data: boats, error } = await query;
     if (error) {
@@ -119,9 +156,8 @@ export const requestBooking = createServerFn({ method: "POST" })
     const { getAdminClient } = await import("./supabase-public.server");
     const supabase = await getAdminClient();
     const { createCharge, getPaymentConfig } = await import("./payment-gateway.server");
-    const { addHistory, upsertFinancialRecord, generateReference } = await import(
-      "./finance.server"
-    );
+    const { addHistory, upsertFinancialRecord, generateReference } =
+      await import("./finance.server");
 
     const { data: boat, error: boatError } = await supabase
       .from("boats")

@@ -11,6 +11,7 @@ import {
 import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { ScrollEffects } from "@/components/scroll-effects";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,7 +28,7 @@ function NotFoundComponent() {
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
           >
             Go home
           </Link>
@@ -56,13 +57,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium !text-[#064576] transition-colors hover:bg-accent"
           >
             Go home
           </a>
@@ -99,10 +100,31 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap",
       },
-      { rel: "icon", type: "image/png", href: "/favicon.png" },
-      { rel: "apple-touch-icon", href: "/favicon.png" },
+      {
+        rel: "icon",
+        type: "image/x-icon",
+        href: "/assets/favicon_io/favicon.ico",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        href: "/assets/favicon_io/favicon-16x16.png",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        href: "/assets/favicon_io/favicon-32x32.png",
+      },
+      {
+        rel: "apple-touch-icon",
+        sizes: "180x180",
+        href: "/assets/favicon_io/apple-touch-icon.png",
+      },
+      { rel: "manifest", href: "/assets/favicon_io/site.webmanifest" },
     ],
   }),
   shellComponent: RootShell,
@@ -130,12 +152,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ScrollEffects />
       <div className="flex min-h-screen flex-col">
-        <a className="skip-link" href="#main-content">
-          Skip to content
-        </a>
         <SiteHeader />
-        <main id="main-content" className="flex-1" tabIndex={-1}>
+        <main className="flex-1">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>

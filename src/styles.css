@@ -138,39 +138,6 @@
     font-family: var(--font-display);
     letter-spacing: -0.015em;
   }
-
-  :focus-visible {
-    outline: 3px solid var(--ring);
-    outline-offset: 3px;
-  }
-}
-
-.skip-link {
-  position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
-  z-index: 1000;
-  transform: translateY(-200%);
-  border-radius: 0.5rem;
-  background: var(--background);
-  color: var(--foreground);
-  padding: 0.75rem 1rem;
-  box-shadow: var(--shadow-luxe);
-}
-
-.skip-link:focus {
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
 }
 
 @utility container-page {
@@ -195,7 +162,66 @@
 }
 
 @utility text-gradient-sea {
-  background-image: linear-gradient(92deg, oklch(0.6866 0.1287 219.4), oklch(0.85 0.09 200));
+  background-image: linear-gradient(
+    92deg,
+    oklch(0.6866 0.1287 219.4),
+    oklch(0.85 0.09 200)
+  );
   background-clip: text;
   color: transparent;
+}
+
+@keyframes gentle-scroll-parallax {
+  from {
+    transform: scale(1.08) translateY(-1.5%);
+  }
+
+  to {
+    transform: scale(1.08) translateY(1.5%);
+  }
+}
+
+[data-scroll-revealed="pending"] {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease;
+}
+
+[data-scroll-revealed="pending"]:focus-within {
+  opacity: 1;
+  transform: none;
+}
+
+[data-scroll-revealed="visible"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 520ms ease,
+    transform 520ms ease;
+}
+
+@supports (animation-timeline: view()) {
+  @media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+    .scroll-parallax-media {
+      animation: gentle-scroll-parallax linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-revealed="pending"],
+  [data-scroll-revealed="visible"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .scroll-parallax-media {
+    animation: none;
+    transform: none;
+  }
 }
