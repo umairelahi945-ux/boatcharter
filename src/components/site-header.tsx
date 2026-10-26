@@ -1,10 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, Menu, X } from "lucide-react";
-import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { ChevronDown, Menu, Phone, X } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FocusEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { createPortal } from "react-dom";
 
 import horizonLogo from "@/assets/horizon-boat-charters-logo.png";
 import { Button } from "@/components/ui/button";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_HREF } from "@/lib/contact-info";
 import { NAVIGATION_SECTIONS } from "@/lib/navigation-content";
 
 const MENU_SECTIONS = ["destinations"] as const;
@@ -77,7 +84,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-sky-950/10 bg-white/95 backdrop-blur-md">
-      <div className="container-page flex h-24 items-center justify-between gap-3">
+      <div className="container-page flex h-24 items-center justify-between gap-2 sm:gap-3">
         <Link
           to="/"
           className="flex shrink-0 items-center gap-1.5 sm:gap-2"
@@ -87,13 +94,13 @@ export function SiteHeader() {
             src={horizonLogo}
             alt="Horizon Boat Charters logo for boat and yacht charter services"
             title="Horizon Boat Charters – Boat & Yacht Charters"
-            className="h-10 w-auto object-contain sm:h-[5.5rem]"
+            className="h-10 w-auto object-contain sm:h-16 xl:h-[5.5rem]"
           />
           <span aria-hidden="true" className="translate-y-1 text-[#064576] sm:translate-y-2">
-            <span className="block text-[1rem] leading-none font-bold tracking-[0.025em] sm:text-[2rem]">
+            <span className="block text-[1rem] leading-none font-bold tracking-[0.025em] sm:text-[1.5rem] xl:text-[2rem]">
               HORIZON
             </span>
-            <span className="mt-1 block text-[1rem] leading-none font-normal tracking-[0.178em] sm:mt-1.5">
+            <span className="mt-1 block text-[0.625rem] leading-none font-normal tracking-[0.178em] sm:mt-1.5 sm:text-[0.875rem] xl:text-[1rem]">
               BOAT CHARTERS
             </span>
           </span>
@@ -103,7 +110,7 @@ export function SiteHeader() {
           aria-label="Main navigation"
           className="hidden flex-1 items-center justify-center lg:flex"
         >
-          <ul className="flex items-center gap-2 xl:gap-3">
+          <ul className="flex items-center gap-2">
             <li>
               <Link to="/" className={navLinkClass} activeProps={{ className: "text-primary" }}>
                 Home
@@ -146,12 +153,20 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
+          <a
+            href={BUSINESS_PHONE_HREF}
+            aria-label={`Call Horizon Boat Charters at ${BUSINESS_PHONE_DISPLAY}`}
+            className="hidden items-center gap-1.5 whitespace-nowrap rounded-sm text-[13px] font-medium text-[#102541] transition-colors hover:text-[#009fbd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00afd0] focus-visible:ring-offset-4 focus-visible:ring-offset-white md:inline-flex xl:text-sm"
+          >
+            <Phone aria-hidden="true" className="size-4 shrink-0" />
+            <span>{BUSINESS_PHONE_DISPLAY}</span>
+          </a>
           <Button
             asChild
             size="sm"
-            className="rounded-lg border-0 bg-[#D19413] px-3 font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#C68D15] active:bg-[#BE8512] focus-visible:ring-2 focus-visible:ring-[#D19413] focus-visible:ring-offset-2 sm:px-4"
+            className="hidden rounded-lg border-0 bg-[#D19413] px-3 font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#C68D15] active:bg-[#BE8512] focus-visible:ring-2 focus-visible:ring-[#D19413] focus-visible:ring-offset-2 sm:inline-flex sm:px-4"
           >
-            <Link to="/fleet">Book Now</Link>
+            <Link to="/become-a-partner">Become a Partner</Link>
           </Button>
 
           <Button
@@ -231,7 +246,20 @@ export function SiteHeader() {
                         Contact Us
                       </MobileLink>
                     </li>
+                    <li>
+                      <MobileLink to="/become-a-partner" onClick={closeDrawer}>
+                        Become a Partner
+                      </MobileLink>
+                    </li>
                   </ul>
+                  <a
+                    href={BUSINESS_PHONE_HREF}
+                    aria-label={`Call Horizon Boat Charters at ${BUSINESS_PHONE_DISPLAY}`}
+                    className="mt-4 flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 px-4 text-sm font-semibold text-[#102541] transition-colors hover:bg-sky-50 hover:text-[#009fbd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00afd0]"
+                  >
+                    <Phone aria-hidden="true" className="size-4 shrink-0" />
+                    <span>{BUSINESS_PHONE_DISPLAY}</span>
+                  </a>
                   <Button
                     asChild
                     size="lg"
@@ -253,10 +281,10 @@ export function SiteHeader() {
 
 function DesktopDropdown({ sectionSlug }: { sectionSlug: (typeof MENU_SECTIONS)[number] }) {
   const section = NAVIGATION_SECTIONS[sectionSlug];
-  if (!section) return null;
   const [expanded, setExpanded] = useState(false);
   const groupRef = useRef<HTMLDivElement>(null);
   const menuId = `desktop-${sectionSlug}-submenu`;
+  if (!section) return null;
 
   function onBlur(event: FocusEvent<HTMLDivElement>) {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setExpanded(false);

@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_HREF } from "@/lib/contact-info";
+import { sendEnquiry } from "@/lib/enquiry.functions";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -34,21 +35,64 @@ function Contact() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [website, setWebsite] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pending, setPending] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(
+    null,
+  );
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const next: Record<string, string> = {};
     if (name.trim().length < 2) next["name"] = "Please enter your name.";
+    if (phone.trim().length < 7 || !/^[+]?[-\d\s().]+$/.test(phone.trim())) {
+      next["phone"] = "Please enter a valid phone number.";
+    }
     if (!emailPattern.test(email.trim())) next["email"] = "Please enter a valid email address.";
     if (message.trim().length < 10) next["message"] = "Please add a few more details.";
     setErrors(next);
+    setFeedback(null);
     if (Object.keys(next).length > 0) return;
-    toast.success("Thanks — our concierge will reply within one business day.");
-    setName("");
-    setPhone("");
-    setEmail("");
-    setMessage("");
+
+    setPending(true);
+    try {
+      const result = await sendEnquiry({ data: { name, phone, email, message, website } });
+      if (!result.success) {
+        if ("errors" in result && result.errors) {
+          const serverErrors: Record<string, string> = {};
+          for (const [field, fieldErrors] of Object.entries(result.errors)) {
+            if (fieldErrors?.[0]) serverErrors[field] = fieldErrors[0];
+          }
+          setErrors(serverErrors);
+        }
+        setFeedback({
+          type: "error",
+          message:
+            "error" in result ? result.error : "Please check the highlighted fields and try again.",
+        });
+        return;
+      }
+
+      setFeedback({
+        type: "success",
+        message:
+          "Thanks — your enquiry has been sent. Our concierge will reply within one business day.",
+      });
+      setName("");
+      setPhone("");
+      setEmail("");
+      setMessage("");
+      setWebsite("");
+      setErrors({});
+    } catch {
+      setFeedback({
+        type: "error",
+        message: "We couldn't send your enquiry right now. Please try again shortly.",
+      });
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -64,10 +108,18 @@ function Contact() {
 
           <ul className="mt-8 space-y-4 text-sm">
             <li className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
-                <Phone className="size-4" />
-              </span>
-              +1 (305) 555 0100
+              <a
+                href={BUSINESS_PHONE_HREF}
+                aria-label={`Call Horizon Boat Charters at ${BUSINESS_PHONE_DISPLAY}`}
+                className="inline-flex min-h-11 items-center gap-3 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              >
+                <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Phone aria-hidden="true" className="size-4" />
+                </span>
+                <span className="text-[#064576] transition-colors hover:text-primary">
+                  {BUSINESS_PHONE_DISPLAY}
+                </span>
+              </a>
             </li>
             <li className="flex items-center gap-3">
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
@@ -104,17 +156,32 @@ function Contact() {
           className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8"
         >
           <h2 className="text-xl font-semibold">Send an enquiry</h2>
+          {feedback ? (
+            <p
+              className={`mt-3 text-sm ${feedback.type === "error" ? "text-destructive" : "text-primary"}`}
+              role={feedback.type === "error" ? "alert" : "status"}
+              aria-live="polite"
+            >
+              {feedback.message}
+            </p>
+          ) : null}
           <div className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="contact-name">Name</Label>
               <Input
                 id="contact-name"
+                required
+                autoComplete="name"
+                aria-invalid={Boolean(errors["name"])}
+                aria-describedby={errors["name"] ? "contact-name-error" : undefined}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 maxLength={100}
               />
               {errors["name"] ? (
-                <p className="text-xs font-medium text-destructive">{errors["name"]}</p>
+                <p id="contact-name-error" className="text-xs font-medium text-destructive">
+                  {errors["name"]}
+                </p>
               ) : null}
             </div>
             <div className="space-y-1.5">
@@ -122,23 +189,37 @@ function Contact() {
               <Input
                 id="contact-phone"
                 type="tel"
+                required
                 autoComplete="tel"
+                aria-invalid={Boolean(errors["phone"])}
+                aria-describedby={errors["phone"] ? "contact-phone-error" : undefined}
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 maxLength={30}
               />
+              {errors["phone"] ? (
+                <p id="contact-phone-error" className="text-xs font-medium text-destructive">
+                  {errors["phone"]}
+                </p>
+              ) : null}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="contact-email">Email</Label>
               <Input
                 id="contact-email"
                 type="email"
+                required
+                autoComplete="email"
+                aria-invalid={Boolean(errors["email"])}
+                aria-describedby={errors["email"] ? "contact-email-error" : undefined}
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 maxLength={255}
               />
               {errors["email"] ? (
-                <p className="text-xs font-medium text-destructive">{errors["email"]}</p>
+                <p id="contact-email-error" className="text-xs font-medium text-destructive">
+                  {errors["email"]}
+                </p>
               ) : null}
             </div>
             <div className="space-y-1.5">
@@ -146,16 +227,32 @@ function Contact() {
               <Textarea
                 id="contact-message"
                 rows={5}
+                required
+                aria-invalid={Boolean(errors["message"])}
+                aria-describedby={errors["message"] ? "contact-message-error" : undefined}
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 maxLength={1000}
               />
               {errors["message"] ? (
-                <p className="text-xs font-medium text-destructive">{errors["message"]}</p>
+                <p id="contact-message-error" className="text-xs font-medium text-destructive">
+                  {errors["message"]}
+                </p>
               ) : null}
             </div>
-            <Button type="submit" size="lg" className="w-full text-white">
-              Send enquiry
+            <div className="absolute -left-[10000px]" aria-hidden="true">
+              <Label htmlFor="contact-website">Leave this field empty</Label>
+              <Input
+                id="contact-website"
+                name="website"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(event) => setWebsite(event.target.value)}
+              />
+            </div>
+            <Button type="submit" size="lg" className="w-full text-white" disabled={pending}>
+              {pending ? "Sending enquiry..." : "Send enquiry"}
             </Button>
           </div>
         </form>

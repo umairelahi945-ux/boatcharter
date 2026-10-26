@@ -32,8 +32,15 @@ bun run dev            # http://localhost:8080
 | `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | browser / server | Supabase publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | server only | Privileged server operations |
 | `PAYMENT_PROVIDER`, `PAYMENT_SECRET_KEY`, `PAYMENT_API_URL`, `PAYMENT_WEBHOOK_SECRET`, ... | server only | Payment gateway (see `.env.example`) |
+| `RESEND_API_KEY` | server only | Resend API key used by contact and partner enquiry forms |
+| `EMAIL_FROM` | server only | Sender address verified with Resend |
+| `CONTACT_EMAIL` | server only | Enquiry destination (defaults to `contact@horizonboatcharters.com`) |
 
 Never commit real credentials.
+
+### Enquiry and partner application email setup
+
+The contact form and boat partner application send through Resend from TanStack Start server functions. Add `RESEND_API_KEY` and `EMAIL_FROM` to your local `.env` and production server environment; set `CONTACT_EMAIL` to `contact@horizonboatcharters.com` if you want to override the built-in recipient. Verify the sender domain/address in Resend and configure the DNS records Resend provides before sending. Applicant addresses are set as `Reply-To`; they are never used as the sender. Both forms include a honeypot and a best-effort per-server-instance rate limit, so production abuse protection across Cloudflare instances should use a shared rate limiter or CAPTCHA if spam becomes an issue.
 
 ## Database
 

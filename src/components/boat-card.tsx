@@ -1,4 +1,5 @@
 import { MapPin, Ruler, Users } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,14 @@ export const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80";
 
 export function BoatCard({ boat, onSelect }: { boat: BoatSummary; onSelect: () => void }) {
+  const images = [
+    ...(Array.isArray(boat.image_urls)
+      ? boat.image_urls.filter((url) => typeof url === "string" && url.trim().length > 0)
+      : []),
+    FALLBACK_IMAGE,
+  ];
+  const [imageIndex, setImageIndex] = useState(0);
+
   return (
     <Card
       data-scroll-reveal-card
@@ -31,12 +40,10 @@ export function BoatCard({ boat, onSelect }: { boat: BoatSummary; onSelect: () =
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <img
-          src={boat.image_urls[0] ?? FALLBACK_IMAGE}
+          src={images[imageIndex] ?? FALLBACK_IMAGE}
           alt={boat.title}
           loading="lazy"
-          onError={(event) => {
-            event.currentTarget.src = FALLBACK_IMAGE;
-          }}
+          onError={() => setImageIndex((current) => Math.min(current + 1, images.length - 1))}
           className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <Badge className="absolute top-3 left-3 bg-secondary text-secondary-foreground">
@@ -60,6 +67,11 @@ export function BoatCard({ boat, onSelect }: { boat: BoatSummary; onSelect: () =
             <MapPin className="size-3.5 text-primary" />
             {boat.location}
           </p>
+          {boat.description ? (
+            <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
+              {boat.description}
+            </p>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-2 text-xs">

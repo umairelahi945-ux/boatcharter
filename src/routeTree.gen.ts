@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BecomeAPartnerRouteImport } from './routes/become-a-partner'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as GalleryRouteImport } from './routes/gallery'
@@ -33,6 +34,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BecomeAPartnerRoute = BecomeAPartnerRouteImport.update({
+  id: '/become-a-partner',
+  path: '/become-a-partner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -80,6 +86,7 @@ const ApiPublicWebhooksPaymentRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/become-a-partner': typeof BecomeAPartnerRoute
   '/contact': typeof ContactRoute
   '/fleet': typeof FleetRoute
   '/gallery': typeof GalleryRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/become-a-partner': typeof BecomeAPartnerRoute
   '/contact': typeof ContactRoute
   '/fleet': typeof FleetRoute
   '/gallery': typeof GalleryRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/become-a-partner': typeof BecomeAPartnerRoute
   '/contact': typeof ContactRoute
   '/fleet': typeof FleetRoute
   '/gallery': typeof GalleryRoute
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/become-a-partner'
     | '/contact'
     | '/fleet'
     | '/gallery'
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/become-a-partner'
     | '/contact'
     | '/fleet'
     | '/gallery'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/become-a-partner'
     | '/contact'
     | '/fleet'
     | '/gallery'
@@ -159,6 +171,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BecomeAPartnerRoute: typeof BecomeAPartnerRoute
   ContactRoute: typeof ContactRoute
   FleetRoute: typeof FleetRoute
   GalleryRoute: typeof GalleryRoute
@@ -189,6 +202,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/become-a-partner': {
+      id: '/become-a-partner'
+      path: '/become-a-partner'
+      fullPath: '/become-a-partner'
+      preLoaderRoute: typeof BecomeAPartnerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BecomeAPartnerRoute: BecomeAPartnerRoute,
   ContactRoute: ContactRoute,
   FleetRoute: FleetRoute,
   GalleryRoute: GalleryRoute,

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Mail, Phone } from "lucide-react";
 
 import horizonLogo from "@/assets/horizon-boat-charters-logo.png";
+import { BUSINESS_PHONE_DISPLAY, BUSINESS_PHONE_HREF } from "@/lib/contact-info";
 
 export function SiteFooter() {
   return (
@@ -47,6 +48,11 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link to="/become-a-partner" className="hover:text-primary">
+                Become a Partner
+              </Link>
+            </li>
+            <li>
               <Link to="/contact" className="hover:text-primary">
                 Contact
               </Link>
@@ -57,8 +63,15 @@ export function SiteFooter() {
         <div>
           <h3 className="text-sm font-semibold tracking-wide text-white uppercase">Charter desk</h3>
           <ul className="mt-4 space-y-2.5 text-sm text-white/60">
-            <li className="flex items-center gap-2">
-              <Phone className="size-4 text-primary" /> +1 (305) 555 0100
+            <li>
+              <a
+                href={BUSINESS_PHONE_HREF}
+                aria-label={`Call Horizon Boat Charters at ${BUSINESS_PHONE_DISPLAY}`}
+                className="inline-flex items-center gap-2 transition-colors hover:text-white focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]"
+              >
+                <Phone aria-hidden="true" className="size-4 text-primary" />
+                {BUSINESS_PHONE_DISPLAY}
+              </a>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="size-4 text-primary" />
@@ -74,7 +87,6 @@ export function SiteFooter() {
             <li>20% deposit at booking, balance due before departure</li>
           </ul>
         </div>
-
       </div>
       <div className="border-t border-white/10">
         <div className="container-page py-6 text-center text-xs text-white/45">
