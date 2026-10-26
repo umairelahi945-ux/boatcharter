@@ -34,3 +34,5 @@ dist-ssr
 *.sln
 *.sw?
 *.tsbuildinfo
+
+src/assets/hero-yacht-clip.mp4
