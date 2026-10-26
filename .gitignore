@@ -15,11 +15,9 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
-
-# Environment files
-# .env holds only publishable (browser-safe) keys and must be committed so published builds can reach the backend.
-.env.local
-.env.*.local
+.env
+.env.*
+!.env.example
 
 # Wrangler / Cloudflare
 .wrangler/
@@ -36,3 +34,5 @@ dist-ssr
 *.sln
 *.sw?
 *.tsbuildinfo
+
+src/assets/hero-yacht-clip.mp4

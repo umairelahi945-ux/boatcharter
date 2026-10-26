@@ -9,6 +9,7 @@ import {
   Lock,
   MapPin,
   Ruler,
+  ShieldCheck,
   Ticket,
   Users,
 } from "lucide-react";
@@ -583,7 +584,11 @@ export function BookingDialog({
                   )}
                 </Button>
 
-                <p className="text-center text-xs text-muted-foreground" role="status">
+                <p
+                  className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground"
+                  role="status"
+                >
+                  <ShieldCheck className="size-3.5 text-primary" />
                   Your booking reference and payment result will appear after submission.
                 </p>
                 {!boat.is_available ? (
