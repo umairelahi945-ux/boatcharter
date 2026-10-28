@@ -21,8 +21,15 @@ const boatSchema = z.object({
   minBookingHours: z.number().int().min(1).max(240).default(2),
   captainName: z.string().trim().max(120).default(""),
   companyName: z.string().trim().max(160).default(""),
-  contactEmail: z.union([z.literal(""), z.string().trim().email("Enter a valid email.").max(255)]).default(""),
-  contactPhone: z.string().trim().max(40).regex(/^[+0-9()\-\s.]*$/, "Enter a valid contact number.").default(""),
+  contactEmail: z
+    .union([z.literal(""), z.string().trim().email("Enter a valid email.").max(255)])
+    .default(""),
+  contactPhone: z
+    .string()
+    .trim()
+    .max(40)
+    .regex(/^[+0-9()\-\s.]*$/, "Enter a valid contact number.")
+    .default(""),
 });
 
 function boatColumns(data: z.output<typeof boatSchema>) {
@@ -58,7 +65,6 @@ async function adminClient(context: { claims: unknown }) {
   assertAdmin(context.claims as { email?: unknown } | null);
   const { getAdminClient } = await import("./supabase-public.server");
   return getAdminClient();
-
 }
 
 export const getDashboardStats = createServerFn({ method: "GET" })
@@ -238,7 +244,10 @@ export const adminListBookings = createServerFn({ method: "GET" })
     const paidByBooking = new Map<string, number>();
     for (const p of payments.data ?? []) {
       if (!p.booking_id || p.payment_status !== "paid") continue;
-      paidByBooking.set(p.booking_id, (paidByBooking.get(p.booking_id) ?? 0) + Number(p.amount_cents));
+      paidByBooking.set(
+        p.booking_id,
+        (paidByBooking.get(p.booking_id) ?? 0) + Number(p.amount_cents),
+      );
     }
     return (data ?? []).map((b) => {
       const boat = b.boat_id ? boatMap.get(b.boat_id) : undefined;
@@ -362,11 +371,14 @@ export const updateBookingTracking = createServerFn({ method: "POST" })
       additional_passengers?: number;
     } = {};
     if (data.adminStatus !== undefined) update.admin_status = data.adminStatus;
-    if (data.paymentTrackingStatus !== undefined) update.payment_tracking_status = data.paymentTrackingStatus;
+    if (data.paymentTrackingStatus !== undefined)
+      update.payment_tracking_status = data.paymentTrackingStatus;
     if (data.paymentLinkSent !== undefined) update.payment_link_sent = data.paymentLinkSent;
     if (data.depositCents !== undefined) update.deposit_cents = data.depositCents;
-    if (data.additionalPassengers !== undefined) update.additional_passengers = data.additionalPassengers;
-    if (Object.keys(update).length === 0) return { ok: true as const, message: "Nothing to update." };
+    if (data.additionalPassengers !== undefined)
+      update.additional_passengers = data.additionalPassengers;
+    if (Object.keys(update).length === 0)
+      return { ok: true as const, message: "Nothing to update." };
     const { error } = await supabase.from("bookings").update(update).eq("id", data.id);
     if (error) {
       console.error("[admin] update booking tracking failed", error);
@@ -386,12 +398,8 @@ export const adminListPayments = createServerFn({ method: "GET" })
     const map = new Map((bookings ?? []).map((b) => [b.id, b]));
     return (payments ?? []).map((payment) => ({
       ...payment,
-      booking_reference: payment.booking_id
-        ? (map.get(payment.booking_id)?.reference ?? "—")
-        : "—",
-      customer_name: payment.booking_id
-        ? (map.get(payment.booking_id)?.customer_name ?? "—")
-        : "—",
+      booking_reference: payment.booking_id ? (map.get(payment.booking_id)?.reference ?? "—") : "—",
+      customer_name: payment.booking_id ? (map.get(payment.booking_id)?.customer_name ?? "—") : "—",
       boat_title: payment.booking_id ? (map.get(payment.booking_id)?.boat_title ?? "—") : "—",
     }));
   });
@@ -461,7 +469,10 @@ export const adminListFinancialRecords = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const supabase = await adminClient(context);
     const [{ data: records }, { data: bookings }] = await Promise.all([
-      supabase.from("financial_records").select("*").order("transaction_date", { ascending: false }),
+      supabase
+        .from("financial_records")
+        .select("*")
+        .order("transaction_date", { ascending: false }),
       supabase.from("bookings").select("id, reference"),
     ]);
     const map = new Map((bookings ?? []).map((b) => [b.id, b.reference]));
@@ -474,7 +485,12 @@ export const adminListFinancialRecords = createServerFn({ method: "GET" })
 export const createAdjustment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (data: { bookingId?: string; amountCents: number; notes: string; type: "adjustment" | "other" }) =>
+    (data: {
+      bookingId?: string;
+      amountCents: number;
+      notes: string;
+      type: "adjustment" | "other";
+    }) =>
       z
         .object({
           bookingId: z.string().uuid().optional(),
@@ -550,7 +566,9 @@ export const adminListFinancialHistory = createServerFn({ method: "GET" })
 
 /** Lets the sign-in page refuse password setup for emails not on the admin allowlist. */
 export const checkAdminEmailEligible = createServerFn({ method: "POST" })
-  .inputValidator((data: { email: string }) => z.object({ email: z.string().trim().email().max(255) }).parse(data))
+  .inputValidator((data: { email: string }) =>
+    z.object({ email: z.string().trim().email().max(255) }).parse(data),
+  )
   .handler(async ({ data }) => {
     const { isAdminEmail } = await import("./admin-guard.server");
     return { eligible: isAdminEmail(data.email) };
@@ -563,7 +581,10 @@ const settingsSchema = z.object({
     .string()
     .trim()
     .max(2000)
-    .refine((v) => v === "" || isSafeMapUrl(v), "Use a Google Maps embed link (https://www.google.com/maps/embed?...)."),
+    .refine(
+      (v) => v === "" || isSafeMapUrl(v),
+      "Use a Google Maps embed link (https://www.google.com/maps/embed?...).",
+    ),
 });
 
 function isSafeMapUrl(value: string) {
@@ -645,7 +666,10 @@ export const adminSaveDestination = createServerFn({ method: "POST" })
     if (error) {
       return {
         ok: false as const,
-        message: error.code === "23505" ? "A destination with this name already exists." : "We could not save this destination.",
+        message:
+          error.code === "23505"
+            ? "A destination with this name already exists."
+            : "We could not save this destination.",
       };
     }
     return { ok: true as const, message: "Destination saved." };

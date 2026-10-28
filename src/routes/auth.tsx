@@ -243,7 +243,9 @@ function AuthPage() {
         </Button>
 
         <p className="mt-5 text-center text-xs text-muted-foreground">
-          {mode === "signin" ? "Authorized administrator without a password? " : "Already set a password? "}
+          {mode === "signin"
+            ? "Authorized administrator without a password? "
+            : "Already set a password? "}
           <button
             type="button"
             className="text-primary underline-offset-4 hover:underline"

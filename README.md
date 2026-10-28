@@ -7,11 +7,11 @@ Luxury yacht and boat charter web application: customer storefront, online booki
 - TanStack Start (React 19, file-based routing, server functions) on Vite
 - TypeScript, Tailwind CSS v4, shadcn/ui
 - Supabase (PostgreSQL, Row Level Security, authentication)
-- Deploys to Cloudflare Workers
+- Server-rendered deployment on Node.js (Nitro)
 
 ## Requirements
 
-- Node.js 20+ and [Bun](https://bun.sh) (npm also works)
+- Node.js 20.19+ and [Bun](https://bun.sh) (npm also works)
 - A Supabase project
 
 ## Setup
@@ -26,21 +26,28 @@ bun run dev            # http://localhost:8080
 
 ## Environment variables
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `VITE_SUPABASE_URL` / `SUPABASE_URL` | browser / server | Supabase project URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_PUBLISHABLE_KEY` | browser / server | Supabase publishable key |
-| `SUPABASE_SERVICE_ROLE_KEY` | server only | Privileged server operations |
-| `PAYMENT_PROVIDER`, `PAYMENT_SECRET_KEY`, `PAYMENT_API_URL`, `PAYMENT_WEBHOOK_SECRET`, ... | server only | Payment gateway (see `.env.example`) |
-| `RESEND_API_KEY` | server only | Resend API key used by contact and partner enquiry forms |
-| `EMAIL_FROM` | server only | Sender address verified with Resend |
-| `CONTACT_EMAIL` | server only | Enquiry destination (defaults to `contact@horizonboatcharters.com`) |
+| Variable                                  | Scope                  | Purpose                                                                           |
+| ----------------------------------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`                       | browser build          | Supabase project URL used by the browser client                                   |
+| `VITE_SUPABASE_PUBLISHABLE_KEY`           | browser build          | Supabase publishable key; safe for browser use                                    |
+| `SUPABASE_URL`                            | server runtime         | Supabase project URL used by server-side clients                                  |
+| `SUPABASE_PUBLISHABLE_KEY`                | server runtime         | Publishable key used by server-side user-authenticated clients                    |
+| `SUPABASE_SERVICE_ROLE_KEY`               | server only            | Privileged admin operations; never expose to browser code                         |
+| `PAYMENT_PROVIDER`, `PAYMENT_API_URL`     | server only            | Provider name and API base URL                                                    |
+| `PAYMENT_SECRET_KEY` or `PAYMENT_API_KEY` | server only            | Live payment/refund API credential                                                |
+| `PAYMENT_PUBLIC_KEY`                      | server to browser      | Optional public key returned to the checkout UI                                   |
+| `PAYMENT_WEBHOOK_SECRET`                  | server only            | HMAC secret used to verify payment webhook requests                               |
+| `PAYMENT_ENVIRONMENT`                     | server only            | `development` enables demo behavior; use `production` for live deployment         |
+| `RESEND_API_KEY`                          | server only            | Resend API key used by contact and partner enquiry forms                          |
+| `EMAIL_FROM`                              | server only            | Sender address verified with Resend                                               |
+| `CONTACT_EMAIL`                           | server only            | Enquiry destination (defaults to `contact@horizonboatcharters.com`)               |
+| `LOVABLE_DB_MIGRATION_URL`                | migration tooling only | Optional direct PostgreSQL URL used by Drizzle Kit; not needed by the running app |
 
 Never commit real credentials.
 
 ### Enquiry and partner application email setup
 
-The contact form and boat partner application send through Resend from TanStack Start server functions. Add `RESEND_API_KEY` and `EMAIL_FROM` to your local `.env` and production server environment; set `CONTACT_EMAIL` to `contact@horizonboatcharters.com` if you want to override the built-in recipient. Verify the sender domain/address in Resend and configure the DNS records Resend provides before sending. Applicant addresses are set as `Reply-To`; they are never used as the sender. Both forms include a honeypot and a best-effort per-server-instance rate limit, so production abuse protection across Cloudflare instances should use a shared rate limiter or CAPTCHA if spam becomes an issue.
+The contact form and boat partner application send through Resend from TanStack Start server functions. Add `RESEND_API_KEY` and `EMAIL_FROM` to your local `.env` and production server environment; set `CONTACT_EMAIL` to `contact@horizonboatcharters.com` if you want to override the built-in recipient. Verify the sender domain/address in Resend and configure the DNS records Resend provides before sending. Applicant addresses are set as `Reply-To`; they are never used as the sender. Both forms include a honeypot and a best-effort per-server-instance rate limit, so deployments with multiple app instances should use a shared rate limiter or CAPTCHA if spam becomes an issue.
 
 ## Database
 
@@ -55,14 +62,17 @@ Enable Email and Google providers in Supabase Auth. Admin access is restricted t
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `bun run dev` | Start the development server |
-| `bun run build` | Production build |
+| Command           | Description                  |
+| ----------------- | ---------------------------- |
+| `bun run dev`     | Start the development server |
+| `bun run build`   | Production build             |
+| `bun run start`   | Start the production server  |
 | `bun run preview` | Preview the production build |
-| `bun run lint` | Run ESLint |
-| `bun run format` | Format with Prettier |
+| `bun run lint`    | Run ESLint                   |
+| `bun run format`  | Format with Prettier         |
 
 ## Deployment
 
-`bun run build` outputs a Cloudflare Workers bundle. Deploy with Wrangler (or any Workers-compatible host), set the environment variables above, and register the payment webhook at `POST https://<your-domain>/api/public/webhooks/payment`.
+`npm run build` (or `bun run build`) creates a Node.js server bundle at `.output/server/index.mjs`. Start it with `npm start` (or `bun run start`). This application uses server-side rendering, server functions, Supabase service-role access, and a payment webhook; it must run on Hostinger Node.js hosting or a Hostinger VPS, not static hosting.
+
+On Hostinger, select a Node.js application/runtime compatible with Node.js 20.19 or newer, set the build command to `npm ci && npm run build`, and the start command to `npm start`. Configure the server-only and public environment variables from `.env.example` in Hostinger's environment settings. Do not upload `.env` or commit credentials. Set `NODE_ENV=production` and `PAYMENT_ENVIRONMENT=production`; demo charges and refunds are blocked in production unless live payment credentials are configured. Configure the payment provider's webhook at `POST https://<your-domain>/api/public/webhooks/payment`. Production Supabase, Resend, and payment credentials plus the domain must be configured and verified before accepting live bookings.

@@ -25,9 +25,22 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,9 +132,6 @@ function AdminPage() {
   const contextFn = useServerFn(getAdminContext);
   const contextQuery = useQuery({ queryKey: ["admin-context"], queryFn: () => contextFn() });
 
-
-
-
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -169,7 +179,6 @@ function AdminPage() {
       </div>
     );
   }
-
 
   return (
     <div className="container-page py-10">
@@ -410,7 +419,13 @@ function BoatsTab() {
       toast.error("Title and location are required.");
       return;
     }
-    const money = [form.hourlyRate, form.dailyRate, form.extraPassengerCharge, form.withSnacksPrice, form.withoutSnacksPrice];
+    const money = [
+      form.hourlyRate,
+      form.dailyRate,
+      form.extraPassengerCharge,
+      form.withSnacksPrice,
+      form.withoutSnacksPrice,
+    ];
     if (money.some((v) => !Number.isFinite(Number(v)) || Number(v) < 0)) {
       toast.error("Prices must be zero or more.");
       return;
@@ -419,7 +434,10 @@ function BoatsTab() {
       toast.error("Minimum booking hours must be a whole number of at least 1.");
       return;
     }
-    if (form.contactEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.contactEmail.trim())) {
+    if (
+      form.contactEmail.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.contactEmail.trim())
+    ) {
       toast.error("Please enter a valid email.");
       return;
     }
@@ -821,7 +839,9 @@ function BookingsTab() {
               <TableCell className="text-xs whitespace-nowrap">{booking.guest_count}</TableCell>
               <TableCell>
                 <Select
-                  value={booking.additional_passengers > 0 ? String(booking.additional_passengers) : ""}
+                  value={
+                    booking.additional_passengers > 0 ? String(booking.additional_passengers) : ""
+                  }
                   disabled={mutate.isPending}
                   onValueChange={(value) =>
                     mutate.mutate({ data: { id: booking.id, additionalPassengers: Number(value) } })
@@ -853,7 +873,9 @@ function BookingsTab() {
                   key={`${booking.id}-${booking.deposit_cents}`}
                   cents={booking.deposit_cents}
                   disabled={mutate.isPending}
-                  onSave={(cents) => mutate.mutate({ data: { id: booking.id, depositCents: cents } })}
+                  onSave={(cents) =>
+                    mutate.mutate({ data: { id: booking.id, depositCents: cents } })
+                  }
                 />
               </TableCell>
               <TableCell>{formatMoney(booking.paid_to_date_cents)}</TableCell>
@@ -904,7 +926,10 @@ function BookingsTab() {
                   disabled={mutate.isPending}
                   onValueChange={(value) =>
                     mutate.mutate({
-                      data: { id: booking.id, adminStatus: value as (typeof ADMIN_BOOKING_STATUSES)[number] },
+                      data: {
+                        id: booking.id,
+                        adminStatus: value as (typeof ADMIN_BOOKING_STATUSES)[number],
+                      },
                     })
                   }
                 >
@@ -1087,7 +1112,11 @@ function FinanceTab() {
             />
           </Field>
           <Field label="Notes">
-            <Input value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={500} />
+            <Input
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              maxLength={500}
+            />
           </Field>
           <Button
             disabled={adjust.isPending || !amount || notes.trim().length < 3}
@@ -1209,7 +1238,11 @@ function TermsTab() {
   const saveFn = useServerFn(adminUpdateSettings);
   const queryClient = useQueryClient();
   const query = useQuery({ queryKey: ["admin-settings"], queryFn: () => getFn() });
-  const [draft, setDraft] = useState<{ cancellationPolicy: string; mapLocation: string; mapEmbedUrl: string } | null>(null);
+  const [draft, setDraft] = useState<{
+    cancellationPolicy: string;
+    mapLocation: string;
+    mapEmbedUrl: string;
+  } | null>(null);
   const save = useMutation({
     mutationFn: saveFn,
     onSuccess: (result) => {
@@ -1236,7 +1269,10 @@ function TermsTab() {
         />
       </Field>
       <Field label="Location (address or place name)">
-        <Input value={form.mapLocation} onChange={(e) => setDraft({ ...form, mapLocation: e.target.value })} />
+        <Input
+          value={form.mapLocation}
+          onChange={(e) => setDraft({ ...form, mapLocation: e.target.value })}
+        />
       </Field>
       <Field label="Google Maps embed link">
         <Input
@@ -1304,7 +1340,13 @@ function DestinationsTab() {
       <div className="mb-4 flex justify-end">
         <Button
           onClick={() =>
-            setEditing({ name: "", season_start: "", season_end: "", sort_order: rows.length + 1, is_active: true })
+            setEditing({
+              name: "",
+              season_start: "",
+              season_end: "",
+              sort_order: rows.length + 1,
+              is_active: true,
+            })
           }
         >
           <Plus className="size-4" /> Add destination
@@ -1330,7 +1372,10 @@ function DestinationsTab() {
                   {row.season_start} to {row.season_end}
                 </TableCell>
                 <TableCell>
-                  <Switch checked={row.is_active} onCheckedChange={(checked) => submit({ ...row, is_active: checked })} />
+                  <Switch
+                    checked={row.is_active}
+                    onCheckedChange={(checked) => submit({ ...row, is_active: checked })}
+                  />
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="icon" onClick={() => setEditing(row)}>
@@ -1355,13 +1400,22 @@ function DestinationsTab() {
           {editing ? (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <Field label="Destination name" className="sm:col-span-2">
-                <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
+                <Input
+                  value={editing.name}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                />
               </Field>
               <Field label="Season starts (e.g. December)">
-                <Input value={editing.season_start} onChange={(e) => setEditing({ ...editing, season_start: e.target.value })} />
+                <Input
+                  value={editing.season_start}
+                  onChange={(e) => setEditing({ ...editing, season_start: e.target.value })}
+                />
               </Field>
               <Field label="Season ends (e.g. May/June)">
-                <Input value={editing.season_end} onChange={(e) => setEditing({ ...editing, season_end: e.target.value })} />
+                <Input
+                  value={editing.season_end}
+                  onChange={(e) => setEditing({ ...editing, season_end: e.target.value })}
+                />
               </Field>
               <Field label="Display order">
                 <Input

@@ -27,7 +27,11 @@ const STATUS_BY_EVENT: Record<
   "payment.failed": { status: "failed", label: "Payment failed", type: "payment_failed" },
   "payment.pending": { status: "pending", label: "Payment pending", type: "payment_pending" },
   "payment.refunded": { status: "refunded", label: "Refund issued", type: "refund_issued" },
-  "payment.cancelled": { status: "cancelled", label: "Payment cancelled", type: "payment_cancelled" },
+  "payment.cancelled": {
+    status: "cancelled",
+    label: "Payment cancelled",
+    type: "payment_cancelled",
+  },
 };
 
 export const Route = createFileRoute("/api/public/webhooks/payment")({
@@ -37,9 +41,8 @@ export const Route = createFileRoute("/api/public/webhooks/payment")({
         const rawBody = await request.text();
         const signature = request.headers.get("x-payment-signature");
 
-        const { verifyWebhookSignature, getPaymentConfig } = await import(
-          "@/lib/payment-gateway.server"
-        );
+        const { verifyWebhookSignature, getPaymentConfig } =
+          await import("@/lib/payment-gateway.server");
         const valid = await verifyWebhookSignature(rawBody, signature);
         if (!valid) {
           return Response.json({ error: "Invalid signature" }, { status: 401 });

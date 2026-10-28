@@ -26,7 +26,9 @@ type Claims = { email?: unknown } | null | undefined;
 export function assertAdmin(claims: Claims): string {
   const email = typeof claims?.email === "string" ? claims.email.trim().toLowerCase() : "";
   if (!isAdminEmail(email)) {
-    throw new Error("Access denied. This account is not authorized to access the administrator dashboard.");
+    throw new Error(
+      "Access denied. This account is not authorized to access the administrator dashboard.",
+    );
   }
   return email;
 }

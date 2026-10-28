@@ -38,7 +38,10 @@ function env(name: string): string {
 export function getPaymentConfig(): PaymentConfig {
   const secret = env("PAYMENT_SECRET_KEY") || env("PAYMENT_API_KEY");
   const apiUrl = env("PAYMENT_API_URL");
-  const environment = env("PAYMENT_ENVIRONMENT") === "production" ? "production" : "development";
+  const environment =
+    env("PAYMENT_ENVIRONMENT") === "production" || env("NODE_ENV") === "production"
+      ? "production"
+      : "development";
   const live = Boolean(secret && apiUrl);
 
   return {
@@ -75,6 +78,16 @@ export async function createCharge(input: ChargeInput): Promise<ChargeResult> {
   const config = getPaymentConfig();
 
   if (config.mode === "demo") {
+    if (config.environment === "production") {
+      console.error("[payments] charge blocked: production payment credentials are not configured");
+      return {
+        status: "failed",
+        transactionId: randomId("txn_unconfigured"),
+        lastFour: null,
+        message: "Online payments are not configured. Please contact us to complete your booking.",
+      };
+    }
+
     const outcome = input.demoOutcome ?? "success";
     if (outcome === "failure") {
       return {
@@ -161,6 +174,16 @@ export async function createRefund(
 ): Promise<{ ok: boolean; refundId: string; message: string }> {
   const config = getPaymentConfig();
   if (config.mode === "demo") {
+    if (config.environment === "production") {
+      console.error("[payments] refund blocked: production payment credentials are not configured");
+      return {
+        ok: false,
+        refundId: "",
+        message:
+          "Refunds are not available because production payment credentials are not configured.",
+      };
+    }
+
     return {
       ok: true,
       refundId: `${transactionId}-refund`,
