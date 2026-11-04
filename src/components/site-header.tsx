@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import {
   useEffect,
@@ -19,6 +19,7 @@ const navLinkClass =
   "relative whitespace-nowrap py-2 text-[14px] font-medium text-[#102541] transition-colors after:absolute after:right-0 after:bottom-0 after:left-0 after:h-px after:origin-left after:scale-x-0 after:bg-[#00afd0] after:transition-transform hover:text-[#009fbd] hover:after:scale-x-100 focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00afd0] focus-visible:ring-offset-4 focus-visible:ring-offset-white";
 
 export function SiteHeader() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -117,19 +118,10 @@ export function SiteHeader() {
           aria-label="Main navigation"
           className="hidden flex-1 items-center justify-center lg:flex"
         >
-          <ul className="flex items-center gap-2">
+          <ul className="flex items-center gap-3">
             <li>
               <Link to="/" className={navLinkClass} activeProps={{ className: "text-primary" }}>
                 Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/fleet"
-                className={navLinkClass}
-                activeProps={{ className: "text-primary" }}
-              >
-                Explore Yachts
               </Link>
             </li>
             {MENU_SECTIONS.map((sectionSlug) => (
@@ -165,15 +157,6 @@ export function SiteHeader() {
                 Contact Us
               </Link>
             </li>
-            <li>
-              <Link
-                to="/how-it-works"
-                className={navLinkClass}
-                activeProps={{ className: "text-primary" }}
-              >
-                How It Works
-              </Link>
-            </li>
           </ul>
         </nav>
 
@@ -186,13 +169,15 @@ export function SiteHeader() {
             <Phone aria-hidden="true" className="size-4 shrink-0" />
             <span>{BUSINESS_PHONE_DISPLAY}</span>
           </a>
-          <Button
-            asChild
-            size="sm"
-            className="hidden rounded-lg border-0 bg-[#064576] px-3 font-semibold text-white shadow-sm hover:bg-[#0a5b91] md:inline-flex"
-          >
-            <Link to="/fleet">Book a charter</Link>
-          </Button>
+          {pathname !== "/" && (
+            <Button
+              asChild
+              size="sm"
+              className="hidden rounded-lg border-0 bg-[#064576] px-3 font-semibold text-white shadow-sm hover:bg-[#0a5b91] md:inline-flex"
+            >
+              <Link to="/fleet">Book a Charter</Link>
+            </Button>
+          )}
           <Button
             asChild
             size="sm"
@@ -266,16 +251,6 @@ export function SiteHeader() {
                     <li>
                       <MobileLink to="/gallery" onClick={closeDrawer}>
                         Gallery
-                      </MobileLink>
-                    </li>
-                    <li>
-                      <MobileLink to="/fleet" onClick={closeDrawer}>
-                        Explore Yachts
-                      </MobileLink>
-                    </li>
-                    <li>
-                      <MobileLink to="/how-it-works" onClick={closeDrawer}>
-                        How It Works
                       </MobileLink>
                     </li>
                     <li>

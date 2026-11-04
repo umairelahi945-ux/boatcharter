@@ -250,7 +250,7 @@ export function FleetFilterBar({
           variant="outline"
           onClick={resetFilters}
           disabled={resetDisabled}
-          className={`min-h-10 w-full transition-colors duration-200 ${hero ? "border-white/20 bg-[#10233a]/70 text-white/85 hover:bg-[#1b344d]/80 hover:text-white" : "sm:col-span-2 lg:col-span-1"}`}
+          className={`min-h-10 w-full transition-colors duration-200 ${hero ? "border-white/20 bg-[#10233a]/70 !text-white hover:bg-[#1b344d]/80 hover:!text-white" : "sm:col-span-2 lg:col-span-1"}`}
         >
           <SlidersHorizontal className="size-4" /> Reset
         </Button>
