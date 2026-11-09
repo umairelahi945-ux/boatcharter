@@ -193,6 +193,39 @@ export type Database = {
           },
         ]
       }
+      contact_submissions: {
+        Row: {
+          created_at: string
+          dedupe_key: string
+          email: string
+          email_status: string
+          id: string
+          message: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          dedupe_key: string
+          email: string
+          email_status?: string
+          id?: string
+          message: string
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          dedupe_key?: string
+          email?: string
+          email_status?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       destinations: {
         Row: {
           created_at: string
