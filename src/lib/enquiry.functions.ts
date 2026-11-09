@@ -94,6 +94,30 @@ export const sendEnquiry = createServerFn({ method: "POST" })
       `Submitted: ${submittedAt} UTC`,
     ].join("\n\n");
 
+    // Save first; the success message depends only on the saved record.
+    const bucket = Math.floor(Date.now() / (10 * 60 * 1000));
+    const digest = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(`${email.toLowerCase()}|${phone}|${message}|${bucket}`),
+    );
+    const dedupeKey = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: saved, error: saveError } = await supabaseAdmin
+      .from("contact_submissions")
+      .upsert({ name, phone, email, message, dedupe_key: dedupeKey }, { onConflict: "dedupe_key", ignoreDuplicates: true })
+      .select("id");
+    if (saveError) {
+      console.error("Contact submission could not be saved:", saveError.message);
+      setResponseStatus(500);
+      return {
+        success: false as const,
+        error: "We couldn't send your enquiry right now. Please try again shortly.",
+      };
+    }
+    // Duplicate submission: already saved and emailed once.
+    if (!saved || saved.length === 0) return { success: true as const };
+    const submissionId = saved[0]!.id;
+
     try {
       const result = await sendResendEmail({
         to: recipient,
@@ -102,21 +126,14 @@ export const sendEnquiry = createServerFn({ method: "POST" })
         html,
         text,
       });
-      if (!result.ok) {
-        setResponseStatus(result.status);
-        console.error("Enquiry email provider rejected the request.");
-        return {
-          success: false as const,
-          error: "We couldn't send your enquiry right now. Please try again shortly.",
-        };
-      }
-      return { success: true as const };
+      if (!result.ok) console.error(`Enquiry email not delivered (status ${result.status}).`);
+      await supabaseAdmin
+        .from("contact_submissions")
+        .update({ email_status: result.ok ? "sent" : "failed" })
+        .eq("id", submissionId);
     } catch {
-      setResponseStatus(502);
       console.error("Enquiry email provider request failed.");
-      return {
-        success: false as const,
-        error: "We couldn't send your enquiry right now. Please try again shortly.",
-      };
+      await supabaseAdmin.from("contact_submissions").update({ email_status: "failed" }).eq("id", submissionId);
     }
+    return { success: true as const };
   });
